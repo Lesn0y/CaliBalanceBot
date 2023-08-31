@@ -16,7 +16,8 @@ public class BotService {
     public String getResponse() {
         return switch (this.request) {
             case "/start" -> "Добро пожаловать в CaliBalance";
-            case "/calculate" -> webService.calculateUser(this.user);
+            case "Вывести КБЖУ" -> webService.calculateUser(this.user);
+            case "Сброс данных пользователя" -> webService.calculateUser(this.user);
             default -> "Данная команда неизвестна";
         };
     }
