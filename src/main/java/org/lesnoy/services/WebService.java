@@ -25,8 +25,8 @@ public class WebService {
 
 
         try (Response response = httpClient.newCall(request).execute()){
-            System.out.println("RESPONSE - " + response.body().string());
-            return user;
+            String jsonResponse = response.body().string();
+            return mapper.readValue(jsonResponse, UserDTO.class);
         } catch (IOException e) {
             throw new Exception(e);
         }

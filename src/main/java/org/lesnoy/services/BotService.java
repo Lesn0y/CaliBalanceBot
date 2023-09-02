@@ -15,6 +15,7 @@ public class BotService {
     private final User user;
     private final Session session;
     private final WebService webService = new WebService();
+    private final MessageService mesService = new MessageService();
 
     public BotService(String request, User user, Session session) {
         this.request = request;
@@ -118,7 +119,10 @@ public class BotService {
 
         try {
             session.removeAttribute("user");
-            return new TgResponse(webService.registerUser(userDTO).toString(), null);
+
+            UserDTO registeredUser = webService.registerUser(userDTO);
+
+            return new TgResponse(mesService.getUserInfo(registeredUser), null);
         } catch (Exception e) {
             return new TgResponse("Произошла ошибка при сохранении", null);
         }
