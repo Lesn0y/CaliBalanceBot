@@ -1,7 +1,8 @@
-package org.lesnoy;
+package org.lesnoy.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
-import org.telegram.telegrambots.meta.api.objects.User;
+import org.lesnoy.dto.UserDTO;
 
 import java.io.IOException;
 
@@ -9,36 +10,25 @@ public class WebService {
 
     private final String serverUrl = "http://localhost:8080";
 
-    public User register(User user) {
+    public UserDTO registerUser(UserDTO user) throws Exception {
         OkHttpClient httpClient = new OkHttpClient();
 
-        RequestBody requestBody = new FormBody.Builder()
-                .add("", user.get)
-                .build();
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(user);
+
+        RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
 
         Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/users/" + user.getUserName() + "/stats")
-                .post(requestBody)
-                .build();
-    }
-
-    public String calculateUser(User user) {
-        OkHttpClient httpClient = new OkHttpClient();
-
-        Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/users/" + user.getUserName() + "/stats")
+                .url(serverUrl + "/api/v1/users")
+                .post(body)
                 .build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            int code = response.code();
-            return switch (code) {
-                case 200 -> "Все хорошо вот данные";
-                case 404 -> "Похоже вы еще не зарегистрированы";
-                default -> "Произашла непридвиденная ошибка";
-            };
+
+        try (Response response = httpClient.newCall(request).execute()){
+            System.out.println("RESPONSE - " + response.body().string());
+            return user;
         } catch (IOException e) {
-            return "Произашла непридвиденная ошибка";
+            throw new Exception(e);
         }
     }
-
 }
