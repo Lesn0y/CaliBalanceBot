@@ -15,10 +15,15 @@ public class BotService {
 
     public String getResponse() {
         return switch (this.request) {
-            case "/start" -> "Добро пожаловать в CaliBalance";
+            case "/start" -> start();
             case "Вывести КБЖУ" -> webService.calculateUser(this.user);
             case "Сброс данных пользователя" -> webService.calculateUser(this.user);
             default -> "Данная команда неизвестна";
         };
+    }
+
+    private String start() {
+        webService.register(user);
+        return null;
     }
 }
