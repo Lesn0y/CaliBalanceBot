@@ -1,6 +1,7 @@
 package org.lesnoy.services;
 
 import org.apache.shiro.session.Session;
+import org.jetbrains.annotations.NotNull;
 import org.lesnoy.dto.UserDTO;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -33,7 +34,7 @@ public class BotService {
 
     private TgResponse register() {
         UserDTO userDTO = (UserDTO) session.getAttribute("user");
-        System.out.println(userDTO);
+
         if (userDTO.getSex() == null) {
             if (session.getAttribute("sex") != null &&
                     (request.equals("Мужской") || request.equals("Женский"))) {
@@ -42,20 +43,7 @@ public class BotService {
                 session.removeAttribute("sex");
             } else {
                 String message = "Выберите ваш пол:";
-                ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-
-                keyboard.setResizeKeyboard(true);
-                keyboard.setOneTimeKeyboard(true);
-
-                ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
-                KeyboardRow keyboardRow = new KeyboardRow();
-
-                keyboardRow.add("Мужской");
-                keyboardRow.add("Женский");
-
-                keyboardRows.add(keyboardRow);
-
-                keyboard.setKeyboard(keyboardRows);
+                ReplyKeyboardMarkup keyboard = getKeyboardWithButtons("Мужской", "Женский");
 
                 session.setAttribute("sex", new Object());
                 return new TgResponse(message, keyboard);
@@ -103,21 +91,8 @@ public class BotService {
                 session.removeAttribute("goal");
             } else {
                 String message = "Выберите вашу цель:";
-                ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-
-                keyboard.setResizeKeyboard(true);
-                keyboard.setOneTimeKeyboard(true);
-
-                ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
-                KeyboardRow keyboardRow = new KeyboardRow();
-
-                keyboardRow.add("Накачаться");
-                keyboardRow.add("Похудеть");
-                keyboardRow.add("Поддерживать форму");
-
-                keyboardRows.add(keyboardRow);
-
-                keyboard.setKeyboard(keyboardRows);
+                ReplyKeyboardMarkup keyboard = getKeyboardWithButtons(
+                        "Накачаться", "Похудеть", "Поддерживать форму");
 
                 session.setAttribute("goal", new Object());
                 return new TgResponse(message, keyboard);
@@ -127,28 +102,14 @@ public class BotService {
         if (userDTO.getActivity() == null) {
             if (session.getAttribute("activity") != null &&
                     (request.equals("Минимальная") || request.equals("Средняя")
-                    || request.equals("Ежедневные тренировки") || request.equals("Профессиональный спортсмен"))) {
+                            || request.equals("Ежедневные тренировки") || request.equals("Профессиональный спортсмен"))) {
                 userDTO.setActivity(request.equals("Минимальная") ? "MINIMUM" : request.equals("Средняя") ? "MIDDLE" : request.equals("Ежедневные тренировки") ? "EVERYDAY" : "MAXIMUM");
                 session.setAttribute("user", userDTO);
                 session.removeAttribute("activity");
             } else {
                 String message = "Выберите вашу недельную активность:";
-                ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-
-                keyboard.setResizeKeyboard(true);
-                keyboard.setOneTimeKeyboard(true);
-
-                ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
-                KeyboardRow keyboardRow = new KeyboardRow();
-
-                keyboardRow.add("Минимальная");
-                keyboardRow.add("Средняя");
-                keyboardRow.add("Ежедневные тренировки");
-                keyboardRow.add("Профессиональный спортсмен");
-
-                keyboardRows.add(keyboardRow);
-
-                keyboard.setKeyboard(keyboardRows);
+                ReplyKeyboardMarkup keyboard = getKeyboardWithButtons(
+                        "Минимальная", "Средняя", "Ежедневные тренировки", "Профессиональный спортсмен");
 
                 session.setAttribute("activity", new Object());
                 return new TgResponse(message, keyboard);
@@ -156,8 +117,8 @@ public class BotService {
         }
 
         try {
-            webService.registerUser(userDTO);
-            return new TgResponse(userDTO.getLogin(), null);
+            session.removeAttribute("user");
+            return new TgResponse(webService.registerUser(userDTO).toString(), null);
         } catch (Exception e) {
             return new TgResponse("Произошла ошибка при сохранении", null);
         }
@@ -166,6 +127,12 @@ public class BotService {
     private TgResponse greeting() {
         session.setAttribute("user", new UserDTO(user.getUserName()));
         String message = "Я помогу вам расчитать опитмальную диету для вашей цели. Для начала работы нужно заполнить анкету";
+        ReplyKeyboardMarkup keyboard = getKeyboardWithButtons("Заполнить данные");
+        return new TgResponse(message, keyboard);
+    }
+
+    @NotNull
+    private ReplyKeyboardMarkup getKeyboardWithButtons(String... buttons) {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
 
         keyboard.setResizeKeyboard(true);
@@ -174,11 +141,13 @@ public class BotService {
         ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
         KeyboardRow keyboardRow = new KeyboardRow();
 
-        keyboardRow.add("Заполнить данные");
+        for (String button : buttons) {
+            keyboardRow.add(button);
+        }
 
         keyboardRows.add(keyboardRow);
 
         keyboard.setKeyboard(keyboardRows);
-        return new TgResponse(message, keyboard);
+        return keyboard;
     }
 }
