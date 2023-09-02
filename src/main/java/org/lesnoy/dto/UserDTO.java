@@ -1,19 +1,29 @@
 package org.lesnoy.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+@JsonDeserialize(using = UserDTODeserializer.class)
 public final class UserDTO {
-    private final String login;
+
+    private int id;
+    private String login;
     private int age;
     private float height;
     private float weight;
     private String sex;
     private String goal;
     private String activity;
+    private float cal;
+    private float prot;
+    private float fats;
+    private float carbc;
 
-    public UserDTO(String login) {
-        this.login = login;
+
+    public UserDTO() {
     }
 
-    public UserDTO(String login, int age, float height, float weight, String sex, String goal, String activity) {
+    public UserDTO(int id, String login, int age, float height, float weight, String sex, String goal, String activity, float cal, float prot, float fats, float carbc) {
+        this.id = id;
         this.login = login;
         this.age = age;
         this.height = height;
@@ -21,10 +31,38 @@ public final class UserDTO {
         this.sex = sex;
         this.goal = goal;
         this.activity = activity;
+        this.cal = cal;
+        this.prot = prot;
+        this.fats = fats;
+        this.carbc = carbc;
+    }
+
+    public UserDTO(String login) {
+        this.login = login;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getLogin() {
         return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public float getFats() {
+        return fats;
+    }
+
+    public void setFats(float fats) {
+        this.fats = fats;
     }
 
     public int getAge() {
@@ -75,16 +113,45 @@ public final class UserDTO {
         this.activity = activity;
     }
 
+    public float getCal() {
+        return cal;
+    }
+
+    public void setCal(float cal) {
+        this.cal = cal;
+    }
+
+    public float getProt() {
+        return prot;
+    }
+
+    public void setProt(float prot) {
+        this.prot = prot;
+    }
+
+    public float getCarbc() {
+        return carbc;
+    }
+
+    public void setCarbc(float carbc) {
+        this.carbc = carbc;
+    }
+
     @Override
     public String toString() {
         return "UserDTO{" +
-                "login='" + login + '\'' +
+                "id=" + id +
+                ", login='" + login + '\'' +
                 ", age=" + age +
                 ", height=" + height +
                 ", weight=" + weight +
                 ", sex='" + sex + '\'' +
                 ", goal='" + goal + '\'' +
                 ", activity='" + activity + '\'' +
+                ", cal=" + cal +
+                ", prot=" + prot +
+                ", fats=" + fats +
+                ", carbc=" + carbc +
                 '}';
     }
 }
