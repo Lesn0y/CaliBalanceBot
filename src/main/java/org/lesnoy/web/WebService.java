@@ -1,8 +1,10 @@
-package org.lesnoy.services;
+package org.lesnoy.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.lesnoy.dto.UserDTO;
+import org.lesnoy.web.exceptions.WebApiExeption;
 
 import java.io.IOException;
 
@@ -10,11 +12,16 @@ public class WebService {
 
     private final String serverUrl = "http://localhost:8080";
 
-    public UserDTO registerUser(UserDTO user) throws Exception {
+    public UserDTO registerUser(UserDTO user) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(user);
+        String json = null;
+        try {
+            json = mapper.writeValueAsString(user);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
 
@@ -28,13 +35,14 @@ public class WebService {
                 String jsonResponse = response.body().string();
                 return mapper.readValue(jsonResponse, UserDTO.class);
             }
-            throw new Exception("Пользователь с никнеймом @" + user.getLogin() + " уже зарегистрирован");
+            throw new WebApiExeption("Пользователь с никнеймом @" + user.getLogin() + " уже зарегистрирован");
         } catch (IOException e) {
-            throw new Exception(e);
+            System.out.println(e.getMessage());
+            return null;
         }
     }
 
-    public UserDTO getUserStats(String login) throws Exception {
+    public UserDTO getUserStats(String login) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -49,9 +57,10 @@ public class WebService {
                 return mapper.readValue(jsonResponse, UserDTO.class);
             }
 
-            throw new Exception("Пользователь с никнеймом @" + login + " ещё не зарегистрирован");
+            throw new WebApiExeption("Пользователь с никнеймом @" + login + " ещё не зарегистрирован");
         } catch (IOException e) {
-            throw new Exception(e);
+            System.out.println(e.getMessage());
+            return null;
         }
     }
 }
