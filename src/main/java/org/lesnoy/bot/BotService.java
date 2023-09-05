@@ -174,15 +174,15 @@ public class BotService {
 
         ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
         KeyboardRow keyboardRow1 = new KeyboardRow();
-        keyboardRow1.add("Показать КБЖУ");
+        keyboardRow1.add("Показать остаток КБЖУ");
         keyboardRows.add(keyboardRow1);
 
         KeyboardRow keyboardRow2 = new KeyboardRow();
-        keyboardRow2.add("В разработке");
+        keyboardRow2.add("Меню продуктов");
         keyboardRows.add(keyboardRow2);
 
         KeyboardRow keyboardRow3 = new KeyboardRow();
-        keyboardRow3.add("В разработке");
+        keyboardRow3.add("Добавить прием пищи");
         keyboardRows.add(keyboardRow3);
 
         keyboard.setKeyboard(keyboardRows);
