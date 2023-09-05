@@ -1,4 +1,4 @@
-package org.lesnoy.services;
+package org.lesnoy.bot;
 
 import org.apache.shiro.session.Session;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +32,7 @@ public class BotService {
         }
         return switch (this.request) {
             case "/start" -> greeting();
-            case "Показать КБЖУ" -> {
+            case "Суточное КБЖУ" -> {
                 try {
                     UserDTO userStats = webService.getUserStats(user.getUserName());
                     yield new TgResponse(mesService.getUserInfo(userStats), defaultKeyboard);
@@ -40,6 +40,11 @@ public class BotService {
                     yield new TgResponse(e.getMessage(), defaultKeyboard);
                 }
             }
+            case "Меню продуктов" -> new TgResponse("Меню продуктов:", getKeyboardWithButtons(
+                    "Добавить новый продукт",
+                    "Посмотреть список своих продуктов",
+                    "Просмотреть список всех продуктов"
+            ));
             default -> new TgResponse("Данная команда неизвестна", defaultKeyboard);
         };
     }
@@ -170,11 +175,11 @@ public class BotService {
         ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
 
         keyboard.setResizeKeyboard(true);
-        keyboard.setOneTimeKeyboard(true);
+        keyboard.setOneTimeKeyboard(false);
 
         ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
         KeyboardRow keyboardRow1 = new KeyboardRow();
-        keyboardRow1.add("Показать остаток КБЖУ");
+        keyboardRow1.add("Остаток КБЖУ");
         keyboardRows.add(keyboardRow1);
 
         KeyboardRow keyboardRow2 = new KeyboardRow();
@@ -184,6 +189,10 @@ public class BotService {
         KeyboardRow keyboardRow3 = new KeyboardRow();
         keyboardRow3.add("Добавить прием пищи");
         keyboardRows.add(keyboardRow3);
+
+        KeyboardRow keyboardRow4 = new KeyboardRow();
+        keyboardRow4.add("Суточное КБЖУ");
+        keyboardRows.add(keyboardRow4);
 
         keyboard.setKeyboard(keyboardRows);
         return keyboard;

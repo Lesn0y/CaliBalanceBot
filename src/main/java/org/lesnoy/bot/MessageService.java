@@ -1,4 +1,4 @@
-package org.lesnoy.services;
+package org.lesnoy.bot;
 
 import org.lesnoy.dto.UserDTO;
 
