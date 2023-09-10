@@ -1,7 +1,14 @@
 package org.lesnoy.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductDTO {
     private String name;
+
+    @JsonProperty("product_type")
+    private ProductType productType;
     private int grams;
     private float cal;
     private float prot;
@@ -11,13 +18,22 @@ public class ProductDTO {
     public ProductDTO() {
     }
 
-    public ProductDTO(String name, int grams, float cal, float prot, float fats, float carbs) {
+    public ProductDTO(String name, String productType, int grams, float cal, float prot, float fats, float carbs) {
         this.name = name;
+        this.productType = ProductType.valueOf(productType);
         this.grams = grams;
         this.cal = cal;
         this.prot = prot;
         this.fats = fats;
         this.carbs = carbs;
+    }
+
+    public ProductType getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = ProductType.valueOf(productType);
     }
 
     public String getName() {
