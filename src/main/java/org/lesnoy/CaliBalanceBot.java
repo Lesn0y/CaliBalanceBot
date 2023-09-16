@@ -1,8 +1,8 @@
 package org.lesnoy;
 
 import org.apache.shiro.session.Session;
-import org.lesnoy.services.BotService;
-import org.lesnoy.services.TgResponse;
+import org.lesnoy.bot.BotService;
+import org.lesnoy.bot.TgResponse;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;

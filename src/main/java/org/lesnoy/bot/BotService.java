@@ -2,7 +2,6 @@ package org.lesnoy.bot;
 
 import org.apache.shiro.session.Session;
 import org.jetbrains.annotations.NotNull;
-import org.lesnoy.dto.ProductDTO;
 import org.lesnoy.dto.ProductType;
 import org.lesnoy.dto.UserDTO;
 import org.lesnoy.web.WebService;
@@ -12,8 +11,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class BotService {
 
