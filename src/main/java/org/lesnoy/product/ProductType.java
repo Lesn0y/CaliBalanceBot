@@ -1,4 +1,4 @@
-package org.lesnoy.dto;
+package org.lesnoy.product;
 
 import java.util.Arrays;
 

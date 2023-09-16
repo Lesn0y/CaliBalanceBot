@@ -2,10 +2,11 @@ package org.lesnoy.bot;
 
 import org.apache.shiro.session.Session;
 import org.jetbrains.annotations.NotNull;
-import org.lesnoy.dto.ProductType;
-import org.lesnoy.dto.UserDTO;
-import org.lesnoy.web.WebService;
-import org.lesnoy.web.exceptions.WebApiExeption;
+import org.lesnoy.exeptions.WebApiExeption;
+import org.lesnoy.product.ProductService;
+import org.lesnoy.product.ProductType;
+import org.lesnoy.user.UserDTO;
+import org.lesnoy.user.UserService;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -17,7 +18,8 @@ public class BotService {
     private final String request;
     private final User user;
     private final Session session;
-    private final WebService webService = new WebService();
+    private final UserService userService = new UserService();
+    private final ProductService productService = new ProductService();
     private final MessageService mesService = new MessageService();
     private final ReplyKeyboardMarkup defaultKeyboard = initDefaultKeyboard();
 
@@ -41,7 +43,7 @@ public class BotService {
             case "/start" -> greeting();
             case "Суточное КБЖУ" -> {
                 try {
-                    UserDTO userStats = webService.getUserStats(user.getUserName());
+                    UserDTO userStats = userService.getUserStats(user.getUserName());
                     yield new TgResponse(mesService.getUserInfo(userStats), defaultKeyboard);
                 } catch (WebApiExeption e) {
                     yield new TgResponse(e.getMessage(), defaultKeyboard);
@@ -89,7 +91,7 @@ public class BotService {
                 session.removeAttribute("user_name");
 
                 String message = mesService.getProductsInfo(
-                        webService.findAllProductsByType(
+                        productService.findAllProductsByType(
                                 ProductType.getTypeByName(this.request).ordinal()
                         ));
                 return new TgResponse(message.isEmpty() ? "Подходящих продуктов нет" : message,
@@ -102,7 +104,7 @@ public class BotService {
             } else {
                 session.removeAttribute("user_name");
                 String message = mesService.getProductsInfo(
-                        webService.findAllProductsByOwnerAndType(
+                        productService.findAllProductsByOwnerAndType(
                                 user.getUserName(),
                                 ProductType.getTypeByName(this.request).ordinal()
                         ));
@@ -208,7 +210,7 @@ public class BotService {
         try {
             session.removeAttribute("command");
 
-            UserDTO registeredUser = webService.registerUser(userDTO);
+            UserDTO registeredUser = userService.registerUser(userDTO);
 
             return new TgResponse(mesService.getUserInfo(registeredUser), defaultKeyboard);
         } catch (WebApiExeption e) {

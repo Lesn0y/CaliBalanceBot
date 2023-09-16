@@ -1,4 +1,4 @@
-package org.lesnoy.web.exceptions;
+package org.lesnoy.exeptions;
 
 public class WebApiExeption extends Exception{
 

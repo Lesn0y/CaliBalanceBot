@@ -1,4 +1,4 @@
-package org.lesnoy.dto;
+package org.lesnoy.product;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -16,8 +16,6 @@ public class CaliBalanceBot extends TelegramLongPollingSessionBot {
     public CaliBalanceBot(String botToken) {
         super(botToken);
     }
-
-
     @Override
     public void onUpdateReceived(Update update, Optional<Session> optional) {
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -33,6 +31,7 @@ public class CaliBalanceBot extends TelegramLongPollingSessionBot {
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId().toString());
             message.setText(response.message());
+
             if (response.keyboard() != null) {
                 message.setReplyMarkup(response.keyboard());
             }

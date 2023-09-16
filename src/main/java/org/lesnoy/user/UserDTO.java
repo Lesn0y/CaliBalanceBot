@@ -1,4 +1,4 @@
-package org.lesnoy.dto;
+package org.lesnoy.user;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 

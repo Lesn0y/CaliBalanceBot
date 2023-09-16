@@ -1,4 +1,4 @@
-package org.lesnoy.dto;
+package org.lesnoy.user;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;

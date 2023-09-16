@@ -1,7 +1,7 @@
 package org.lesnoy.bot;
 
-import org.lesnoy.dto.ProductDTO;
-import org.lesnoy.dto.UserDTO;
+import org.lesnoy.product.ProductDTO;
+import org.lesnoy.user.UserDTO;
 
 import java.util.List;
 
