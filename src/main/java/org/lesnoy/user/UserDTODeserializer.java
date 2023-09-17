@@ -35,7 +35,7 @@ public class UserDTODeserializer extends StdDeserializer<UserDTO> {
         userDTO.setCal(node.get("cal").asLong());
         userDTO.setProt(node.get("prot").asLong());
         userDTO.setFats(node.get("fats").asLong());
-        userDTO.setCarbc(node.get("carbs").asLong());
+        userDTO.setCarbs(node.get("carbs").asLong());
 
         return userDTO;
     }
