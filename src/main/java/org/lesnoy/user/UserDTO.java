@@ -16,13 +16,12 @@ public final class UserDTO {
     private float cal;
     private float prot;
     private float fats;
-    private float carbc;
-
+    private float carbs;
 
     public UserDTO() {
     }
 
-    public UserDTO(int id, String login, int age, float height, float weight, String sex, String goal, String activity, float cal, float prot, float fats, float carbc) {
+    public UserDTO(int id, String login, int age, float height, float weight, String sex, String goal, String activity, float cal, float prot, float fats, float carbs) {
         this.id = id;
         this.login = login;
         this.age = age;
@@ -34,11 +33,26 @@ public final class UserDTO {
         this.cal = cal;
         this.prot = prot;
         this.fats = fats;
-        this.carbc = carbc;
+        this.carbs = carbs;
     }
 
     public UserDTO(String login) {
         this.login = login;
+    }
+
+    public String getCaloriesInfo() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Ваша норма каллорий: ");
+        builder.append(cal);
+        builder.append("\nВаша норма белков: ");
+        builder.append(prot);
+        builder.append("\nВаша норма жиров: ");
+        builder.append(fats);
+        builder.append("\nВаша норма углеводов: ");
+        builder.append(carbs);
+
+        return builder.toString();
     }
 
     public int getId() {
@@ -129,12 +143,12 @@ public final class UserDTO {
         this.prot = prot;
     }
 
-    public float getCarbc() {
-        return carbc;
+    public float getCarbs() {
+        return carbs;
     }
 
-    public void setCarbc(float carbc) {
-        this.carbc = carbc;
+    public void setCarbs(float carbs) {
+        this.carbs = carbs;
     }
 
     @Override
@@ -151,7 +165,7 @@ public final class UserDTO {
                 ", cal=" + cal +
                 ", prot=" + prot +
                 ", fats=" + fats +
-                ", carbc=" + carbc +
+                ", carbc=" + carbs +
                 '}';
     }
 }

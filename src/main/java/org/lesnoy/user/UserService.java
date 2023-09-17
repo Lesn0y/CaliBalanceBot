@@ -1,15 +1,192 @@
 package org.lesnoy.user;
 
+import org.apache.shiro.session.Session;
+import org.jetbrains.annotations.NotNull;
+import org.lesnoy.bot.TgRequest;
 import org.lesnoy.exeptions.WebApiExeption;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+
+import java.util.ArrayList;
 
 public class UserService {
     private final UserWebService webService = new UserWebService();
 
-    public UserDTO getUserStats(String userName) throws WebApiExeption {
-        return webService.getUserStats(userName);
+    public String getUserCaloriesInfo(String userName) {
+        try {
+            return webService.getUserStats(userName).getCaloriesInfo();
+        } catch (WebApiExeption e) {
+            return e.getMessage();
+        }
     }
 
-    public UserDTO registerUser(UserDTO userDTO) throws WebApiExeption {
+    public UserDTO saveUser(UserDTO userDTO) throws WebApiExeption {
         return webService.registerUser(userDTO);
+    }
+
+    public SendMessage register(TgRequest tgRequest) {
+        SendMessage response = new SendMessage();
+
+        Session session = tgRequest.session();
+        String request = tgRequest.request();
+
+        UserDTO userDTO = (UserDTO) session.getAttribute("new_user");
+
+        if (userDTO.getSex() == null) {
+            if (session.getAttribute("sex") != null &&
+                    (request.equals("Мужской") || request.equals("Женский"))) {
+                userDTO.setSex(request.equals("Мужской") ? "MAN" : "WOMAN");
+                session.setAttribute("new_user", userDTO);
+                session.removeAttribute("sex");
+            } else {
+                String message = "Выберите ваш пол:";
+                ReplyKeyboardMarkup keyboard = getReplyKeyboardWithButtons("Мужской", "Женский");
+
+                session.setAttribute("sex", new Object());
+                response.setText(message);
+                response.setReplyMarkup(keyboard);
+                return response;
+            }
+        }
+        if (userDTO.getAge() == 0) {
+            if (session.getAttribute("age") != null && Integer.parseInt(request) > 0) {
+                userDTO.setAge(Integer.parseInt(request));
+                session.setAttribute("new_user", userDTO);
+                session.removeAttribute("age");
+            } else {
+                String message = "Сколько вам полных лет?";
+                session.setAttribute("age", new Object());
+                response.setText(message);
+                return response;
+            }
+        }
+        if (userDTO.getWeight() == 0) {
+            if (session.getAttribute("weight") != null && Float.parseFloat(request) > 0) {
+                userDTO.setWeight(Float.parseFloat(request));
+                session.setAttribute("new_user", userDTO);
+                session.removeAttribute("weight");
+            } else {
+                String message = "Ваш вес: \n(В формате - 75.3)";
+                session.setAttribute("weight", new Object());
+                response.setText(message);
+                return response;
+            }
+        }
+        if (userDTO.getHeight() == 0) {
+            if (session.getAttribute("height") != null && Float.parseFloat(request) > 0) {
+                userDTO.setHeight(Float.parseFloat(request));
+                session.setAttribute("new_user", userDTO);
+                session.removeAttribute("height");
+            } else {
+                String message = "Ваш рост: \n(В формате - 170.5)";
+                session.setAttribute("height", new Object());
+                response.setText(message);
+                return response;
+            }
+        }
+
+        if (userDTO.getGoal() == null) {
+            if (session.getAttribute("goal") != null &&
+                    (request.equals("Накачаться") || request.equals("Похудеть") || request.equals("Поддерживать форму"))) {
+                userDTO.setGoal(request.equals("Накачаться") ? "PUMP_UP" : request.equals("Похудеть") ? "SLIM" : "KEEP_FIT");
+                session.setAttribute("new_user", userDTO);
+                session.removeAttribute("goal");
+            } else {
+                String message = "Выберите вашу цель:";
+                ReplyKeyboardMarkup keyboard = getReplyKeyboardWithButtons(
+                        "Накачаться", "Похудеть", "Поддерживать форму");
+
+                session.setAttribute("goal", new Object());
+                response.setText(message);
+                response.setReplyMarkup(keyboard);
+                return response;
+            }
+        }
+
+        if (userDTO.getActivity() == null) {
+            if (session.getAttribute("activity") != null &&
+                    (request.equals("Минимальная") || request.equals("Средняя")
+                            || request.equals("Ежедневные тренировки") || request.equals("Профессиональный спортсмен"))) {
+                userDTO.setActivity(request.equals("Минимальная") ? "MINIMUM" : request.equals("Средняя") ? "MIDDLE" : request.equals("Ежедневные тренировки") ? "EVERYDAY" : "MAXIMUM");
+                session.setAttribute("new_user", userDTO);
+                session.removeAttribute("activity");
+            } else {
+                String message = "Выберите вашу недельную активность:";
+                ReplyKeyboardMarkup keyboard = getReplyKeyboardWithButtons(
+                        "Минимальная", "Средняя", "Ежедневные тренировки", "Профессиональный спортсмен");
+
+                session.setAttribute("activity", new Object());
+                response.setText(message);
+                response.setReplyMarkup(keyboard);
+                return response;
+            }
+        }
+
+        try {
+            session.removeAttribute("command");
+            session.removeAttribute("new_user");
+
+            UserDTO registeredUser = saveUser(userDTO);
+
+            response.setText(registeredUser.getCaloriesInfo());
+            response.setReplyMarkup(initDefaultKeyboard());
+            return response;
+        } catch (WebApiExeption e) {
+            response.setText("Произошла ошибка - " + e.getMessage());
+            response.setReplyMarkup(initDefaultKeyboard());
+            return response;
+        }
+    }
+
+    @NotNull
+    private ReplyKeyboardMarkup getReplyKeyboardWithButtons(String... buttons) {
+        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
+
+        keyboard.setResizeKeyboard(true);
+        keyboard.setOneTimeKeyboard(true);
+
+        ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
+        KeyboardRow keyboardRow = new KeyboardRow();
+
+        for (String button : buttons) {
+            keyboardRow.add(button);
+        }
+
+        keyboardRows.add(keyboardRow);
+
+        keyboard.setKeyboard(keyboardRows);
+        return keyboard;
+    }
+
+    private ReplyKeyboardMarkup initDefaultKeyboard() {
+        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
+
+        keyboard.setResizeKeyboard(true);
+        keyboard.setOneTimeKeyboard(false);
+
+        ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
+        KeyboardRow keyboardRow1 = new KeyboardRow();
+        keyboardRow1.add("Остаток КБЖУ");
+        keyboardRows.add(keyboardRow1);
+
+        KeyboardRow keyboardRow2 = new KeyboardRow();
+        keyboardRow2.add("Меню продуктов");
+        keyboardRows.add(keyboardRow2);
+
+        KeyboardRow keyboardRow3 = new KeyboardRow();
+        keyboardRow3.add("Добавить прием пищи");
+        keyboardRows.add(keyboardRow3);
+
+        KeyboardRow keyboardRow4 = new KeyboardRow();
+        keyboardRow4.add("Суточное КБЖУ");
+        keyboardRows.add(keyboardRow4);
+
+        KeyboardRow keyboardRow5 = new KeyboardRow();
+        keyboardRow5.add("test");
+        keyboardRows.add(keyboardRow4);
+
+        keyboard.setKeyboard(keyboardRows);
+        return keyboard;
     }
 }
