@@ -15,7 +15,7 @@ public class ProductWebService {
 
     private final String serverUrl = "http://localhost:8080";
 
-    public List<ProductDTO> findAllProductsByOwnerAndType(String login, int typeId) throws WebApiExeption {
+    public List<Product> findAllProductsByOwnerAndType(String login, int typeId) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -29,9 +29,9 @@ public class ProductWebService {
                 String jsonResponse = response.body().string();
                 JsonNode jsonArray = mapper.readTree(jsonResponse);
 
-                List<ProductDTO> products = new ArrayList<>();
+                List<Product> products = new ArrayList<>();
                 for (JsonNode element : jsonArray) {
-                    products.add(mapper.treeToValue(element, ProductDTO.class));
+                    products.add(mapper.treeToValue(element, Product.class));
                 }
                 return products;
             }
@@ -42,7 +42,7 @@ public class ProductWebService {
         }
     }
 
-    public List<ProductDTO> findAllProductsByType(int typeId) throws WebApiExeption {
+    public List<Product> findAllProductsByType(int typeId) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -56,9 +56,9 @@ public class ProductWebService {
                 String jsonResponse = response.body().string();
                 JsonNode jsonArray = mapper.readTree(jsonResponse);
 
-                List<ProductDTO> products = new ArrayList<>();
+                List<Product> products = new ArrayList<>();
                 for (JsonNode element : jsonArray) {
-                    products.add(mapper.treeToValue(element, ProductDTO.class));
+                    products.add(mapper.treeToValue(element, Product.class));
                 }
                 return products;
             }
