@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProductDTO {
-    private String name;
+public class Product {
 
+    private int id;
+    private String name;
     @JsonProperty("product_type")
     private ProductType productType;
     private int grams;
@@ -15,10 +16,10 @@ public class ProductDTO {
     private float fats;
     private float carbs;
 
-    public ProductDTO() {
+    public Product() {
     }
 
-    public ProductDTO(String name, String productType, int grams, float cal, float prot, float fats, float carbs) {
+    public Product(String name, String productType, int grams, float cal, float prot, float fats, float carbs) {
         this.name = name;
         this.productType = ProductType.valueOf(productType);
         this.grams = grams;
@@ -34,6 +35,10 @@ public class ProductDTO {
 
     public void setProductType(String productType) {
         this.productType = ProductType.valueOf(productType);
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getName() {
