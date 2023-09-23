@@ -1,5 +1,6 @@
 package org.lesnoy.bot;
 
 public enum SessionAttribute {
-    NEW_USER
+    NEW_USER,
+    PRODUCT
 }

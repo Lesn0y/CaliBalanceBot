@@ -10,6 +10,8 @@ public class Product {
     private String name;
     @JsonProperty("product_type")
     private ProductType productType;
+    @JsonProperty("owner_name")
+    private String ownerName;
     private int grams;
     private float cal;
     private float prot;
@@ -29,12 +31,44 @@ public class Product {
         this.carbs = carbs;
     }
 
+    public Product(int id, String name, String productType, String ownerName, int grams, float cal, float prot, float fats, float carbs) throws Exception {
+        this.id = id;
+        this.name = name;
+        this.productType = ProductType.getTypeByName(productType);
+        this.ownerName = ownerName;
+        this.grams = grams;
+        this.cal = cal;
+        this.prot = prot;
+        this.fats = fats;
+        this.carbs = carbs;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
+    }
+
+    public Product(String name) {
+        this.name = name;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
     public ProductType getProductType() {
         return productType;
     }
 
-    public void setProductType(String productType) {
-        this.productType = ProductType.valueOf(productType);
+    public void setProductTypeByTypeName(String typeName) throws Exception {
+        this.productType = ProductType.getTypeByName(typeName);
     }
 
     public int getId() {
