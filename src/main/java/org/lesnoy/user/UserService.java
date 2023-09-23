@@ -1,14 +1,12 @@
 package org.lesnoy.user;
 
 import org.apache.shiro.session.Session;
-import org.jetbrains.annotations.NotNull;
-import org.lesnoy.bot.TgRequest;
 import org.lesnoy.exeptions.WebApiExeption;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
-import java.util.ArrayList;
+import static org.lesnoy.bot.KeyboardProvider.getDefaultKeyboard;
+import static org.lesnoy.bot.KeyboardProvider.getReplyKeyboardWithButtons;
 
 public class UserService {
     private final UserWebService webService = new UserWebService();
@@ -25,11 +23,8 @@ public class UserService {
         return webService.registerUser(userDTO);
     }
 
-    public SendMessage register(TgRequest tgRequest) {
+    public SendMessage register(String request, Session session) {
         SendMessage response = new SendMessage();
-
-        Session session = tgRequest.session();
-        String request = tgRequest.request();
 
         UserDTO userDTO = (UserDTO) session.getAttribute("new_user");
 
@@ -85,7 +80,6 @@ public class UserService {
                 return response;
             }
         }
-
         if (userDTO.getGoal() == null) {
             if (session.getAttribute("goal") != null &&
                     (request.equals("Накачаться") || request.equals("Похудеть") || request.equals("Поддерживать форму"))) {
@@ -103,7 +97,6 @@ public class UserService {
                 return response;
             }
         }
-
         if (userDTO.getActivity() == null) {
             if (session.getAttribute("activity") != null &&
                     (request.equals("Минимальная") || request.equals("Средняя")
@@ -122,7 +115,6 @@ public class UserService {
                 return response;
             }
         }
-
         try {
             session.removeAttribute("command");
             session.removeAttribute("new_user");
@@ -130,63 +122,12 @@ public class UserService {
             UserDTO registeredUser = saveUser(userDTO);
 
             response.setText(registeredUser.getCaloriesInfo());
-            response.setReplyMarkup(initDefaultKeyboard());
+            response.setReplyMarkup(getDefaultKeyboard());
             return response;
         } catch (WebApiExeption e) {
             response.setText("Произошла ошибка - " + e.getMessage());
-            response.setReplyMarkup(initDefaultKeyboard());
+            response.setReplyMarkup(getDefaultKeyboard());
             return response;
         }
-    }
-
-    @NotNull
-    private ReplyKeyboardMarkup getReplyKeyboardWithButtons(String... buttons) {
-        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-
-        keyboard.setResizeKeyboard(true);
-        keyboard.setOneTimeKeyboard(true);
-
-        ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
-        KeyboardRow keyboardRow = new KeyboardRow();
-
-        for (String button : buttons) {
-            keyboardRow.add(button);
-        }
-
-        keyboardRows.add(keyboardRow);
-
-        keyboard.setKeyboard(keyboardRows);
-        return keyboard;
-    }
-
-    private ReplyKeyboardMarkup initDefaultKeyboard() {
-        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-
-        keyboard.setResizeKeyboard(true);
-        keyboard.setOneTimeKeyboard(false);
-
-        ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
-        KeyboardRow keyboardRow1 = new KeyboardRow();
-        keyboardRow1.add("Остаток КБЖУ");
-        keyboardRows.add(keyboardRow1);
-
-        KeyboardRow keyboardRow2 = new KeyboardRow();
-        keyboardRow2.add("Меню продуктов");
-        keyboardRows.add(keyboardRow2);
-
-        KeyboardRow keyboardRow3 = new KeyboardRow();
-        keyboardRow3.add("Добавить прием пищи");
-        keyboardRows.add(keyboardRow3);
-
-        KeyboardRow keyboardRow4 = new KeyboardRow();
-        keyboardRow4.add("Суточное КБЖУ");
-        keyboardRows.add(keyboardRow4);
-
-        KeyboardRow keyboardRow5 = new KeyboardRow();
-        keyboardRow5.add("test");
-        keyboardRows.add(keyboardRow4);
-
-        keyboard.setKeyboard(keyboardRows);
-        return keyboard;
     }
 }
