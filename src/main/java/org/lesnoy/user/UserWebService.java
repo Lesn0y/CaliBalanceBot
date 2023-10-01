@@ -3,6 +3,7 @@ package org.lesnoy.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
+import org.lesnoy.entry.Entry;
 import org.lesnoy.exeptions.WebApiExeption;
 
 import java.io.IOException;
@@ -34,20 +35,20 @@ public class UserWebService {
                 String jsonResponse = response.body().string();
                 return mapper.readValue(jsonResponse, UserDTO.class);
             }
-            throw new WebApiExeption("Пользователь с никнеймом @" + user.getLogin() + " уже зарегистрирован");
+            throw new WebApiExeption("Пользователь с никнеймом @" + user.getUsername() + " уже зарегистрирован");
         } catch (IOException e) {
             System.out.println(e.getMessage());
             return null;
         }
     }
 
-    public UserDTO getUserStats(String login) throws WebApiExeption {
+    public UserDTO getUserStats(String username) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
 
         Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/users/" + login)
+                .url(serverUrl + "/api/v1/users/" + username)
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
@@ -56,7 +57,29 @@ public class UserWebService {
                 return mapper.readValue(jsonResponse, UserDTO.class);
             }
 
-            throw new WebApiExeption("Пользователь с никнеймом @" + login + " ещё не зарегистрирован");
+            throw new WebApiExeption("Пользователь с никнеймом @" + username + " ещё не зарегистрирован");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public Entry getDailyUserStats(String username) throws WebApiExeption {
+        OkHttpClient httpClient = new OkHttpClient();
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        Request request = new Request.Builder()
+                .url(serverUrl + "/api/v1/entries?username=" + username)
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.code() == 200) {
+                String jsonResponse = response.body().string();
+                return mapper.readValue(jsonResponse, Entry.class);
+            }
+
+            throw new WebApiExeption("Пользователь с никнеймом @" + username + " ещё не зарегистрирован");
         } catch (IOException e) {
             System.out.println(e.getMessage());
             return null;

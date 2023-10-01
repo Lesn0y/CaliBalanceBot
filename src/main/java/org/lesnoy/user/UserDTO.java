@@ -1,12 +1,9 @@
 package org.lesnoy.user;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
-@JsonDeserialize(using = UserDTODeserializer.class)
 public final class UserDTO {
 
     private int id;
-    private String login;
+    private String username;
     private int age;
     private float height;
     private float weight;
@@ -21,9 +18,9 @@ public final class UserDTO {
     public UserDTO() {
     }
 
-    public UserDTO(int id, String login, int age, float height, float weight, String sex, String goal, String activity, float cal, float prot, float fats, float carbs) {
+    public UserDTO(int id, String username, int age, float height, float weight, String sex, String goal, String activity, float cal, float prot, float fats, float carbs) {
         this.id = id;
-        this.login = login;
+        this.username = username;
         this.age = age;
         this.height = height;
         this.weight = weight;
@@ -36,8 +33,8 @@ public final class UserDTO {
         this.carbs = carbs;
     }
 
-    public UserDTO(String login) {
-        this.login = login;
+    public UserDTO(String username) {
+        this.username = username;
     }
 
     public String getCaloriesInfo() {
@@ -63,12 +60,12 @@ public final class UserDTO {
         this.id = id;
     }
 
-    public String getLogin() {
-        return login;
+    public String getUsername() {
+        return username;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public float getFats() {
@@ -155,7 +152,7 @@ public final class UserDTO {
     public String toString() {
         return "UserDTO{" +
                 "id=" + id +
-                ", login='" + login + '\'' +
+                ", login='" + username + '\'' +
                 ", age=" + age +
                 ", height=" + height +
                 ", weight=" + weight +

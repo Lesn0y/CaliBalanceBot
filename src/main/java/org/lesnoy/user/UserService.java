@@ -13,7 +13,15 @@ public class UserService {
 
     public String getUserCaloriesInfo(String userName) {
         try {
-            return webService.getUserStats(userName).getCaloriesInfo();
+            return webService.getDailyUserStats(userName).getCaloriesInfo();
+        } catch (WebApiExeption e) {
+            return e.getMessage();
+        }
+    }
+
+    public String getActualUserCaloriesInfo(String username) {
+        try {
+            return webService.getUserStats(username).getCaloriesInfo();
         } catch (WebApiExeption e) {
             return e.getMessage();
         }
