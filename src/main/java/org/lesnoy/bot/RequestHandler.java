@@ -50,7 +50,7 @@ public class RequestHandler {
                     response.setReplyMarkup(getInlineKeyboardWithProductMenu());
                 }
                 case "Остаток КБЖУ" -> response.setText(userService.getUserCaloriesInfo(username));
-                case "Суточное КБЖУ" -> response.setText(userService.getUserCaloriesInfo(username));
+                case "Суточное КБЖУ" -> response.setText(userService.getActualUserCaloriesInfo(username));
                 default -> {
                     response.setText("It is what it is");
                     response.setReplyMarkup(getDefaultKeyboard());
