@@ -76,11 +76,19 @@ public class RequestHandler {
             response = new SendMessage();
             response.setText("Главное меню");
             response.setReplyMarkup(getDefaultKeyboard());
-        }
-        else if (request.equals("menu")) {
+        } else if (request.equals("menu")) {
             response = new SendMessage();
             response.setText("Меню продуктов");
             response.setReplyMarkup(getInlineKeyboardWithProductMenu());
+        } else if (session.getAttribute("addToMenu") != null) {
+            try {
+                session.removeAttribute("addToMenu");
+                response = productService.addProductToUserMenu(Integer.parseInt(request), username);
+            } catch (WebApiExeption e) {
+                response = new SendMessage();
+                response.setText(e.getMessage());
+                response.setReplyMarkup(getInlineKeyboardWithProductMenu());
+            }
         } else {
             response = productService.getResponse(request, session);
         }

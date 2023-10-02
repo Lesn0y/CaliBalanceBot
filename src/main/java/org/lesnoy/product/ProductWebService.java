@@ -14,7 +14,7 @@ public class ProductWebService {
 
     private final String serverUrl = "http://localhost:8080";
 
-    public Product saveProduct(Product product) throws WebApiExeption {
+    public Product saveProduct(Product product, String username) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -28,7 +28,7 @@ public class ProductWebService {
         RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
 
         Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/products")
+                .url(serverUrl + "/api/v1/products/" + username)
                 .post(body)
                 .build();
 
@@ -125,4 +125,24 @@ public class ProductWebService {
         }
     }
 
+    public Product findProductById(int productId) throws WebApiExeption {
+        OkHttpClient httpClient = new OkHttpClient();
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        Request request = new Request.Builder()
+                .url(serverUrl + "/api/v1/products/" + productId)
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.code() == 200) {
+                String jsonResponse = response.body().string();
+                return mapper.readValue(jsonResponse, Product.class);
+            }
+            throw new WebApiExeption("Продукт не найдены");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
 }

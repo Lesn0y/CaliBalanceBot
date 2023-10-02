@@ -11,12 +11,14 @@ import static org.lesnoy.bot.KeyboardProvider.*;
 public class ProductService {
 
     private final ProductWebService webService = new ProductWebService();
+
     public SendMessage getResponseByAttribute(String username, String request, Session session, String string) throws WebApiExeption {
         SendMessage response = new SendMessage();
         session.removeAttribute("productOption");
         return switch (string) {
             case "all" -> {
                 response.setText("Нажмите на продукт чтобы добавить его себе в рацион");
+                session.setAttribute("addToMenu", new Object());
                 List<Product> products = findAllProductsByType(Integer.parseInt(request));
                 response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
                 yield response;
@@ -40,6 +42,15 @@ public class ProductService {
         };
     }
 
+    public SendMessage addProductToUserMenu(int productId, String username) throws WebApiExeption {
+        SendMessage response = new SendMessage();
+        Product product = webService.findProductById(productId);
+        webService.saveProduct(product, username);
+        response.setText("Продукт \"" + product.getName() + "\" успешно добавлен пользователю @" + username);
+        response.setReplyMarkup(getDefaultKeyboard());
+        return response;
+    }
+
     public SendMessage saveProduct(String username, String request, Session session) throws WebApiExeption {
         SendMessage response = new SendMessage();
 
@@ -49,7 +60,6 @@ public class ProductService {
             List<Product> products = webService.findProductByName(request);
             response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
             response.setText("Еда с подобным названием");
-            return response;
         } else {
             Product product = (Product) session.getAttribute("new_product");
 
@@ -96,12 +106,11 @@ public class ProductService {
             session.removeAttribute("command");
             session.removeAttribute("new_product");
             session.removeAttribute("productOption");
-            product.setOwnerName(username);
-            Product newProduct = webService.saveProduct(product);
+            Product newProduct = webService.saveProduct(product, username);
             response.setText("Продукт " + getProductInfo(newProduct) + " - успешно сохранён");
             response.setReplyMarkup(getDefaultKeyboard());
-            return response;
         }
+        return response;
     }
 
     public SendMessage getResponse(String request, Session session) {
@@ -109,7 +118,7 @@ public class ProductService {
         return switch (ProductOption.valueOf(request)) {
             case ALL_PRODUCTS -> {
                 session.setAttribute("productOption", "all");
-                response.setText("Продукты с подобным названием:");
+                response.setText("Выберите тип продукта:");
                 response.setReplyMarkup(getProductTypeInlineKeyboard());
                 yield response;
             }
