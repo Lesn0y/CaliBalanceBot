@@ -25,6 +25,7 @@ public class ProductService {
             }
             case "own" -> {
                 response.setText("Нажмите на продукт чтобы удалить его из своего рациона");
+                session.setAttribute("removeFromMenu", new Object());
                 List<Product> products =
                         findAllProductsByOwnerAndType(username, Integer.parseInt(request));
                 response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
@@ -47,6 +48,14 @@ public class ProductService {
         Product product = webService.findProductById(productId);
         webService.saveProduct(product, username);
         response.setText("Продукт \"" + product.getName() + "\" успешно добавлен пользователю @" + username);
+        response.setReplyMarkup(getDefaultKeyboard());
+        return response;
+    }
+
+    public SendMessage removeProductFromUserMenu(int productId, String username) throws WebApiExeption {
+        SendMessage response = new SendMessage();
+        webService.deleteProductFromUserMenu(productId, username);
+        response.setText("Продукт" + productId + " был удалён из вашего меню");
         response.setReplyMarkup(getDefaultKeyboard());
         return response;
     }

@@ -89,6 +89,15 @@ public class RequestHandler {
                 response.setText(e.getMessage());
                 response.setReplyMarkup(getInlineKeyboardWithProductMenu());
             }
+        } else if (session.getAttribute("removeFromMenu") != null) {
+            try {
+                session.removeAttribute("removeFromMenu");
+                response = productService.removeProductFromUserMenu(Integer.parseInt(request), username);
+            } catch (WebApiExeption e) {
+                response = new SendMessage();
+                response.setText(e.getMessage());
+                response.setReplyMarkup(getInlineKeyboardWithProductMenu());
+            }
         } else {
             response = productService.getResponse(request, session);
         }

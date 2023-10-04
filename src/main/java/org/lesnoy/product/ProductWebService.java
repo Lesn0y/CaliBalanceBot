@@ -44,6 +44,23 @@ public class ProductWebService {
         }
     }
 
+    public void deleteProductFromUserMenu(int productId, String username) throws WebApiExeption {
+        OkHttpClient httpClient = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(serverUrl + "/api/v1/products/" + username + "/" + productId)
+                .delete()
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.code() != 204) {
+                throw new WebApiExeption("Произошла ошибка при сохранении продукта #" + productId);
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
     public List<Product> findProductByName(String productName) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
