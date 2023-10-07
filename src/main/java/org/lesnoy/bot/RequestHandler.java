@@ -49,8 +49,8 @@ public class RequestHandler {
                     response.setText("Меню продуктов:");
                     response.setReplyMarkup(getInlineKeyboardWithProductMenu());
                 }
-                case "Остаток КБЖУ" -> response.setText(userService.getUserCaloriesInfo(username));
-                case "Суточное КБЖУ" -> response.setText(userService.getActualUserCaloriesInfo(username));
+                case "Остаток КБЖУ" -> response.setText(userService.getActualUserCaloriesInfo(username));
+                case "Суточное КБЖУ" -> response.setText(userService.getUserCaloriesInfo(username));
                 default -> {
                     response.setText("It is what it is");
                     response.setReplyMarkup(getDefaultKeyboard());

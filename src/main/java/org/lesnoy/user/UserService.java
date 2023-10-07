@@ -1,6 +1,7 @@
 package org.lesnoy.user;
 
 import org.apache.shiro.session.Session;
+import org.lesnoy.entry.Entry;
 import org.lesnoy.exeptions.WebApiExeption;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -11,15 +12,19 @@ import static org.lesnoy.bot.KeyboardProvider.getReplyKeyboardWithButtons;
 public class UserService {
     private final UserWebService webService = new UserWebService();
 
-    public String getUserCaloriesInfo(String userName) {
+    public String getActualUserCaloriesInfo(String userName) {
         try {
-            return webService.getDailyUserStats(userName).getCaloriesInfo();
+            Entry dailyUserStats = webService.getDailyUserStats(userName);
+            if (dailyUserStats == null) {
+                return "Похоже, сегодня вы еще не ели";
+            }
+            return dailyUserStats.getCaloriesInfo();
         } catch (WebApiExeption e) {
             return e.getMessage();
         }
     }
 
-    public String getActualUserCaloriesInfo(String username) {
+    public String getUserCaloriesInfo(String username) {
         try {
             return webService.getUserStats(username).getCaloriesInfo();
         } catch (WebApiExeption e) {

@@ -1,5 +1,8 @@
 package org.lesnoy.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class UserDTO {
 
     private int id;

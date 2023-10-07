@@ -77,6 +77,8 @@ public class UserWebService {
             if (response.code() == 200) {
                 String jsonResponse = response.body().string();
                 return mapper.readValue(jsonResponse, Entry.class);
+            } else if (response.code() == 204) {
+                return null;
             }
 
             throw new WebApiExeption("Пользователь с никнеймом @" + username + " ещё не зарегистрирован");
