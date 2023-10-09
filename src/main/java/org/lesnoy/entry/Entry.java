@@ -19,6 +19,54 @@ public class Entry {
     @JsonProperty("carbs_left")
     private float carbsLeft;
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public float getCalLeft() {
+        return calLeft;
+    }
+
+    public void setCalLeft(float calLeft) {
+        this.calLeft = calLeft;
+    }
+
+    public float getProtLeft() {
+        return protLeft;
+    }
+
+    public void setProtLeft(float protLeft) {
+        this.protLeft = protLeft;
+    }
+
+    public float getFatsLeft() {
+        return fatsLeft;
+    }
+
+    public void setFatsLeft(float fatsLeft) {
+        this.fatsLeft = fatsLeft;
+    }
+
+    public float getCarbsLeft() {
+        return carbsLeft;
+    }
+
+    public void setCarbsLeft(float carbsLeft) {
+        this.carbsLeft = carbsLeft;
+    }
+
     public String getCaloriesInfo() {
         StringBuilder builder = new StringBuilder();
 
