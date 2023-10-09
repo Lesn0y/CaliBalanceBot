@@ -18,7 +18,7 @@ public class ProductWebService {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
-        String json = null;
+        String json;
         try {
             json = mapper.writeValueAsString(product);
         } catch (JsonProcessingException e) {
