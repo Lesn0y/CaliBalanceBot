@@ -12,10 +12,10 @@ public class ProductService {
 
     private final ProductWebService webService = new ProductWebService();
 
-    public SendMessage getResponseByAttribute(String username, String request, Session session, String string) throws WebApiExeption {
+    public SendMessage getResponseByAttribute(String username, String request, Session session, String option) throws WebApiExeption {
         SendMessage response = new SendMessage();
         session.removeAttribute("productOption");
-        return switch (string) {
+        return switch (option) {
             case "all" -> {
                 response.setText("Нажмите на продукт чтобы добавить его себе в рацион");
                 session.setAttribute("addToMenu", new Object());
@@ -34,6 +34,14 @@ public class ProductService {
             case "add" -> {
                 response.setText("Введите название продукта:");
                 response.setReplyMarkup(null);
+                yield response;
+            }
+            case "entry" -> {
+                response.setText("Выберите:");
+                session.setAttribute("addEntry", new Object());
+                List<Product> products =
+                        findAllProductsByOwnerAndType(username, Integer.parseInt(request));
+                response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
                 yield response;
             }
             default -> {

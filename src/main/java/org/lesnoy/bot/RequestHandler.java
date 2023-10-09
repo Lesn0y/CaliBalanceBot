@@ -1,6 +1,7 @@
 package org.lesnoy.bot;
 
 import org.apache.shiro.session.Session;
+import org.lesnoy.entry.EntryService;
 import org.lesnoy.exeptions.WebApiExeption;
 import org.lesnoy.product.ProductService;
 import org.lesnoy.user.UserDTO;
@@ -13,10 +14,38 @@ public class RequestHandler {
 
     private final UserService userService = new UserService();
     private final ProductService productService = new ProductService();
+    private final EntryService entryService = new EntryService();
 
     public SendMessage handleMessage(String username, String request, Session session) {
         SendMessage response;
-        if (session.getAttribute("command") != null) {
+        if (session.getAttribute("command") == null) {
+            response = new SendMessage();
+            switch (request) {
+                case "/start" -> {
+                    session.setAttribute("new_user", new UserDTO(username));
+                    session.setAttribute("command", SessionAttribute.NEW_USER);
+                    response.setText("Я помогу вам расчитать опитмальную диету для вашей цели. Для начала работы нужно заполнить анкету");
+                    response.setReplyMarkup(getReplyKeyboardWithButtons("Продолжить"));
+                }
+                case "Меню продуктов" -> {
+                    session.setAttribute("command", SessionAttribute.PRODUCT);
+                    response.setText("Меню продуктов:");
+                    response.setReplyMarkup(getInlineKeyboardWithProductMenu());
+                }
+                case "Добавить прием пищи" -> {
+                    session.setAttribute("productOption", "entry");
+                    response.setText("Выберите продукт:");
+                    response.setReplyMarkup(getProductTypeInlineKeyboard());
+                }
+                case "Остаток КБЖУ" -> response.setText(userService.getActualUserCaloriesInfo(username));
+                case "Суточное КБЖУ" -> response.setText(userService.getUserCaloriesInfo(username));
+                default -> {
+                    response.setText("It is what it is");
+                    response.setReplyMarkup(getDefaultKeyboard());
+                }
+            }
+            return response;
+        } else {
             return switch (SessionAttribute.valueOf(session.getAttribute("command").toString())) {
                 case NEW_USER -> userService.register(request, session);
                 case PRODUCT -> {
@@ -34,29 +63,21 @@ public class RequestHandler {
                         yield response;
                     }
                 }
+                case ADD_ENTRY -> {
+                    session.removeAttribute("entry");
+                    session.removeAttribute("command");
+                    try {
+                        yield response = entryService.saveEntryToUser(Integer.parseInt((String) session.getAttribute("dish")),
+                                Integer.parseInt(request),
+                                username);
+                    } catch (WebApiExeption e) {
+                        response = new SendMessage();
+                        response.setText(e.getMessage());
+                        response.setReplyMarkup(getDefaultKeyboard());
+                        yield response;
+                    }
+                }
             };
-        } else {
-            response = new SendMessage();
-            switch (request) {
-                case "/start" -> {
-                    session.setAttribute("new_user", new UserDTO(username));
-                    session.setAttribute("command", SessionAttribute.NEW_USER);
-                    response.setText("Я помогу вам расчитать опитмальную диету для вашей цели. Для начала работы нужно заполнить анкету");
-                    response.setReplyMarkup(getReplyKeyboardWithButtons("Продолжить"));
-                }
-                case "Меню продуктов" -> {
-                    session.setAttribute("command", SessionAttribute.PRODUCT);
-                    response.setText("Меню продуктов:");
-                    response.setReplyMarkup(getInlineKeyboardWithProductMenu());
-                }
-                case "Остаток КБЖУ" -> response.setText(userService.getActualUserCaloriesInfo(username));
-                case "Суточное КБЖУ" -> response.setText(userService.getUserCaloriesInfo(username));
-                default -> {
-                    response.setText("It is what it is");
-                    response.setReplyMarkup(getDefaultKeyboard());
-                }
-            }
-            return response;
         }
     }
 
@@ -80,6 +101,12 @@ public class RequestHandler {
             response = new SendMessage();
             response.setText("Меню продуктов");
             response.setReplyMarkup(getInlineKeyboardWithProductMenu());
+        } else if (session.getAttribute("entry") == null) {
+            response = new SendMessage();
+            response.setText("Введите вес блюда: ");
+            response.setReplyMarkup(null);
+            session.setAttribute("dish", request);
+            session.setAttribute("command", SessionAttribute.ADD_ENTRY);
         } else if (session.getAttribute("addToMenu") != null) {
             try {
                 session.removeAttribute("addToMenu");

@@ -2,5 +2,6 @@ package org.lesnoy.bot;
 
 public enum SessionAttribute {
     NEW_USER,
-    PRODUCT
+    PRODUCT,
+    ADD_ENTRY
 }
