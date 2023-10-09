@@ -84,9 +84,7 @@ public class KeyboardProvider {
         ArrayList<KeyboardRow> keyboardRows = new ArrayList<>();
         KeyboardRow keyboardRow = new KeyboardRow();
 
-        for (String button : buttons) {
-            keyboardRow.add(button);
-        }
+        keyboardRow.addAll(List.of(buttons));
 
         keyboardRows.add(keyboardRow);
 
