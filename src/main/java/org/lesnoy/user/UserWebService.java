@@ -12,7 +12,7 @@ public class UserWebService {
 
     private final String serverUrl = "http://localhost:8080";
 
-    public UserDTO registerUser(UserDTO user) throws WebApiExeption {
+    public User registerUser(User user) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -33,7 +33,7 @@ public class UserWebService {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.code() == 201) {
                 String jsonResponse = response.body().string();
-                return mapper.readValue(jsonResponse, UserDTO.class);
+                return mapper.readValue(jsonResponse, User.class);
             }
             throw new WebApiExeption("Пользователь с никнеймом @" + user.getUsername() + " уже зарегистрирован");
         } catch (IOException e) {
@@ -42,7 +42,7 @@ public class UserWebService {
         }
     }
 
-    public UserDTO getUserStats(String username) throws WebApiExeption {
+    public User getUserStats(String username) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -54,7 +54,7 @@ public class UserWebService {
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.code() == 200) {
                 String jsonResponse = response.body().string();
-                return mapper.readValue(jsonResponse, UserDTO.class);
+                return mapper.readValue(jsonResponse, User.class);
             }
 
             throw new WebApiExeption("Пользователь с никнеймом @" + username + " ещё не зарегистрирован");

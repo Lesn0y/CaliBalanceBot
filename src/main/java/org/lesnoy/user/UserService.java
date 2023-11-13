@@ -32,20 +32,20 @@ public class UserService {
         }
     }
 
-    public UserDTO saveUser(UserDTO userDTO) throws WebApiExeption {
-        return webService.registerUser(userDTO);
+    public User saveUser(User user) throws WebApiExeption {
+        return webService.registerUser(user);
     }
 
     public SendMessage register(String request, Session session) {
         SendMessage response = new SendMessage();
 
-        UserDTO userDTO = (UserDTO) session.getAttribute("new_user");
+        User user = (User) session.getAttribute("new_user");
 
-        if (userDTO.getSex() == null) {
+        if (user.getSex() == null) {
             if (session.getAttribute("sex") != null &&
                     (request.equals("Мужской") || request.equals("Женский"))) {
-                userDTO.setSex(request.equals("Мужской") ? "MAN" : "WOMAN");
-                session.setAttribute("new_user", userDTO);
+                user.setSex(request.equals("Мужской") ? "MAN" : "WOMAN");
+                session.setAttribute("new_user", user);
                 session.removeAttribute("sex");
             } else {
                 String message = "Выберите ваш пол:";
@@ -57,10 +57,10 @@ public class UserService {
                 return response;
             }
         }
-        if (userDTO.getAge() == 0) {
+        if (user.getAge() == 0) {
             if (session.getAttribute("age") != null && Integer.parseInt(request) > 0) {
-                userDTO.setAge(Integer.parseInt(request));
-                session.setAttribute("new_user", userDTO);
+                user.setAge(Integer.parseInt(request));
+                session.setAttribute("new_user", user);
                 session.removeAttribute("age");
             } else {
                 String message = "Сколько вам полных лет?";
@@ -69,10 +69,10 @@ public class UserService {
                 return response;
             }
         }
-        if (userDTO.getWeight() == 0) {
+        if (user.getWeight() == 0) {
             if (session.getAttribute("weight") != null && Float.parseFloat(request) > 0) {
-                userDTO.setWeight(Float.parseFloat(request));
-                session.setAttribute("new_user", userDTO);
+                user.setWeight(Float.parseFloat(request));
+                session.setAttribute("new_user", user);
                 session.removeAttribute("weight");
             } else {
                 String message = "Ваш вес: \n(В формате - 75.3)";
@@ -81,10 +81,10 @@ public class UserService {
                 return response;
             }
         }
-        if (userDTO.getHeight() == 0) {
+        if (user.getHeight() == 0) {
             if (session.getAttribute("height") != null && Float.parseFloat(request) > 0) {
-                userDTO.setHeight(Float.parseFloat(request));
-                session.setAttribute("new_user", userDTO);
+                user.setHeight(Float.parseFloat(request));
+                session.setAttribute("new_user", user);
                 session.removeAttribute("height");
             } else {
                 String message = "Ваш рост: \n(В формате - 170.5)";
@@ -93,11 +93,11 @@ public class UserService {
                 return response;
             }
         }
-        if (userDTO.getGoal() == null) {
+        if (user.getGoal() == null) {
             if (session.getAttribute("goal") != null &&
                     (request.equals("Накачаться") || request.equals("Похудеть") || request.equals("Поддерживать форму"))) {
-                userDTO.setGoal(request.equals("Накачаться") ? "PUMP_UP" : request.equals("Похудеть") ? "SLIM" : "KEEP_FIT");
-                session.setAttribute("new_user", userDTO);
+                user.setGoal(request.equals("Накачаться") ? "PUMP_UP" : request.equals("Похудеть") ? "SLIM" : "KEEP_FIT");
+                session.setAttribute("new_user", user);
                 session.removeAttribute("goal");
             } else {
                 String message = "Выберите вашу цель:";
@@ -110,12 +110,12 @@ public class UserService {
                 return response;
             }
         }
-        if (userDTO.getActivity() == null) {
+        if (user.getActivity() == null) {
             if (session.getAttribute("activity") != null &&
                     (request.equals("Минимальная") || request.equals("Средняя")
                             || request.equals("Ежедневные тренировки") || request.equals("Профессиональный спортсмен"))) {
-                userDTO.setActivity(request.equals("Минимальная") ? "MINIMUM" : request.equals("Средняя") ? "MIDDLE" : request.equals("Ежедневные тренировки") ? "EVERYDAY" : "MAXIMUM");
-                session.setAttribute("new_user", userDTO);
+                user.setActivity(request.equals("Минимальная") ? "MINIMUM" : request.equals("Средняя") ? "MIDDLE" : request.equals("Ежедневные тренировки") ? "EVERYDAY" : "MAXIMUM");
+                session.setAttribute("new_user", user);
                 session.removeAttribute("activity");
             } else {
                 String message = "Выберите вашу недельную активность:";
@@ -129,10 +129,7 @@ public class UserService {
             }
         }
         try {
-            session.removeAttribute("command");
-            session.removeAttribute("new_user");
-
-            UserDTO registeredUser = saveUser(userDTO);
+            User registeredUser = saveUser(user);
 
             response.setText(registeredUser.getCaloriesInfo());
             response.setReplyMarkup(getDefaultKeyboard());
@@ -141,6 +138,9 @@ public class UserService {
             response.setText("Произошла ошибка - " + e.getMessage());
             response.setReplyMarkup(getDefaultKeyboard());
             return response;
+        } finally {
+            session.removeAttribute("command");
+            session.removeAttribute("new_user");
         }
     }
 }

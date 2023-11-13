@@ -3,7 +3,7 @@ package org.lesnoy.user;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class UserDTO {
+public final class User {
 
     private int id;
     private String username;
@@ -18,10 +18,10 @@ public final class UserDTO {
     private float fats;
     private float carbs;
 
-    public UserDTO() {
+    public User() {
     }
 
-    public UserDTO(int id, String username, int age, float height, float weight, String sex, String goal, String activity, float cal, float prot, float fats, float carbs) {
+    public User(int id, String username, int age, float height, float weight, String sex, String goal, String activity, float cal, float prot, float fats, float carbs) {
         this.id = id;
         this.username = username;
         this.age = age;
@@ -36,7 +36,7 @@ public final class UserDTO {
         this.carbs = carbs;
     }
 
-    public UserDTO(String username) {
+    public User(String username) {
         this.username = username;
     }
 
