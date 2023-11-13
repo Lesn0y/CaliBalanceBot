@@ -61,7 +61,7 @@ public class ProductWebService {
         }
     }
 
-    public List<Product> findProductByName(String productName) throws WebApiExeption {
+    public List<Product> findAdminProductByName(String productName) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -88,13 +88,13 @@ public class ProductWebService {
         }
     }
 
-    public List<Product> findAllProductsByOwnerAndType(String login, int typeId) throws WebApiExeption {
+    public List<Product> findOwnerProductsByType(String login, int typeId) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
 
         Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/products?type=" + typeId + "&owner=" + login)
+                .url(serverUrl + "/api/v1/products?owner=" + login + "&type_id=" + typeId)
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
@@ -115,13 +115,13 @@ public class ProductWebService {
         }
     }
 
-    public List<Product> findAllProductsByType(int typeId) throws WebApiExeption {
+    public List<Product> findAdminProductsByType(int typeId) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
 
         Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/products?type=" + typeId)
+                .url(serverUrl + "/api/v1/products?type_id=" + typeId)
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {

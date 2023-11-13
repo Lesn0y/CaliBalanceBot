@@ -12,60 +12,73 @@ public class ProductService {
 
     private final ProductWebService webService = new ProductWebService();
 
-    public SendMessage getResponseByAttribute(String username, String request, Session session, String option) throws WebApiExeption {
+    public SendMessage getResponse(String request, Session session) {
         SendMessage response = new SendMessage();
-        session.removeAttribute("productOption");
-        return switch (option) {
-            case "all" -> {
-                response.setText("Нажмите на продукт чтобы добавить его себе в рацион");
-                session.setAttribute("addToMenu", new Object());
-                List<Product> products = findAllProductsByType(Integer.parseInt(request));
-                response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
+        return switch (ProductOption.valueOf(request)) {
+            case ALL_PRODUCTS -> {
+                session.setAttribute("productMenu_btn", ProductOption.ALL_PRODUCTS);
+                response.setText("Выберите тип продукта:");
+                response.setReplyMarkup(getProductTypeInlineKeyboard());
                 yield response;
             }
-            case "own" -> {
-                response.setText("Нажмите на продукт чтобы удалить его из своего рациона");
-                session.setAttribute("removeFromMenu", new Object());
-                List<Product> products =
-                        findAllProductsByOwnerAndType(username, Integer.parseInt(request));
-                response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
+            case OWN_PRODUCTS -> {
+                session.setAttribute("productMenu_btn", ProductOption.OWN_PRODUCTS);
+                response.setReplyMarkup(getProductTypeInlineKeyboard());
+                response.setText("Выберите тип продукта:");
                 yield response;
             }
-            case "add" -> {
+            case ADD_PRODUCT -> {
+                session.setAttribute("productMenu_btn", ProductOption.ADD_PRODUCT);
                 response.setText("Введите название продукта:");
                 response.setReplyMarkup(null);
                 yield response;
             }
-            case "entry" -> {
-                response.setText("Выберите:");
-                session.setAttribute("addEntry", new Object());
-                List<Product> products =
-                        findAllProductsByOwnerAndType(username, Integer.parseInt(request));
-                response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
-                yield response;
-            }
-            default -> {
-                response.setText("Да блять, я не могу");
-                yield response;
-            }
+            case EXIT -> null;
         };
     }
 
-    public SendMessage addProductToUserMenu(int productId, String username) throws WebApiExeption {
+    public SendMessage getResponseByAttribute(String username, String request, Session session) throws WebApiExeption {
         SendMessage response = new SendMessage();
-        Product product = webService.findProductById(productId);
-        webService.saveProduct(product, username);
-        response.setText("Продукт \"" + product.getName() + "\" успешно добавлен пользователю @" + username);
-        response.setReplyMarkup(getDefaultKeyboard());
+        if (session.getAttribute("product_id") == null) {
+            switch (ProductOption.valueOf(session.getAttribute("productMenu_btn").toString())) {
+                case ALL_PRODUCTS -> {
+                    session.setAttribute("product_id", new Object());
+                    response.setText("Нажмите на продукт чтобы добавить его себе в рацион");
+                    List<Product> products =
+                            findAdminProductsByType(Integer.parseInt(request));
+                    response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
+                }
+                case OWN_PRODUCTS -> {
+                    session.setAttribute("product_id", new Object());
+                    response.setText("Нажмите на продукт чтобы удалить его из своего рациона");
+                    List<Product> products =
+                            findProductsByOwnerAndType(username, Integer.parseInt(request));
+                    response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
+                }
+                case ADD_PRODUCT -> response = saveProduct(username, request, session);
+            }
+        } else {
+            session.removeAttribute("product_id");
+            session.removeAttribute("command");
+            switch (ProductOption.valueOf(String.valueOf(session.getAttribute("productMenu_btn")))) {
+                case ALL_PRODUCTS -> response = addProductToUserMenu(Integer.parseInt(request), username);
+                case OWN_PRODUCTS -> response = removeProductFromUserMenu(Integer.parseInt(request), username);
+            }
+            session.removeAttribute("productMenu_btn");
+        }
         return response;
     }
 
-    public SendMessage removeProductFromUserMenu(int productId, String username) throws WebApiExeption {
-        SendMessage response = new SendMessage();
-        webService.deleteProductFromUserMenu(productId, username);
-        response.setText("Продукт" + productId + " был удалён из вашего меню");
-        response.setReplyMarkup(getDefaultKeyboard());
-        return response;
+    public List<Product> findAdminProductByName(String name) throws WebApiExeption {
+        return webService.findAdminProductByName(name);
+    }
+
+    public List<Product> findAdminProductsByType(int ordinal) throws WebApiExeption {
+        return webService.findAdminProductsByType(ordinal);
+    }
+
+    public List<Product> findProductsByOwnerAndType(String userName, int ordinal) throws WebApiExeption {
+        return webService.findOwnerProductsByType(userName, ordinal);
     }
 
     public SendMessage saveProduct(String username, String request, Session session) throws WebApiExeption {
@@ -74,7 +87,7 @@ public class ProductService {
         if (session.getAttribute("new_product") == null) {
             session.setAttribute("new_product", new Product(request));
 
-            List<Product> products = webService.findProductByName(request);
+            List<Product> products = webService.findAdminProductByName(request);
             response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
             response.setText("Еда с подобным названием");
         } else {
@@ -121,8 +134,8 @@ public class ProductService {
             }
 
             session.removeAttribute("command");
-            session.removeAttribute("new_product");
             session.removeAttribute("productOption");
+            session.removeAttribute("new_product");
             Product newProduct = webService.saveProduct(product, username);
             response.setText("Продукт " + getProductInfo(newProduct) + " - успешно сохранён");
             response.setReplyMarkup(getDefaultKeyboard());
@@ -130,36 +143,22 @@ public class ProductService {
         return response;
     }
 
-    public SendMessage getResponse(String request, Session session) {
+
+    public SendMessage addProductToUserMenu(int productId, String username) throws WebApiExeption {
         SendMessage response = new SendMessage();
-        return switch (ProductOption.valueOf(request)) {
-            case ALL_PRODUCTS -> {
-                session.setAttribute("productOption", "all");
-                response.setText("Выберите тип продукта:");
-                response.setReplyMarkup(getProductTypeInlineKeyboard());
-                yield response;
-            }
-            case OWN_PRODUCTS -> {
-                session.setAttribute("productOption", "own");
-                response.setReplyMarkup(getProductTypeInlineKeyboard());
-                response.setText("Выберите тип продукта:");
-                yield response;
-            }
-            case ADD_PRODUCT -> {
-                session.setAttribute("productOption", "add");
-                response.setText("Введите название продукта:");
-                response.setReplyMarkup(null);
-                yield response;
-            }
-        };
+        Product product = webService.findProductById(productId);
+        webService.saveProduct(product, username);
+        response.setText("Продукт \"" + product.getName() + "\" успешно добавлен пользователю @" + username);
+        response.setReplyMarkup(getDefaultKeyboard());
+        return response;
     }
 
-    public List<Product> findAllProductsByType(int ordinal) throws WebApiExeption {
-        return webService.findAllProductsByType(ordinal);
-    }
-
-    public List<Product> findAllProductsByOwnerAndType(String userName, int ordinal) throws WebApiExeption {
-        return webService.findAllProductsByOwnerAndType(userName, ordinal);
+    public SendMessage removeProductFromUserMenu(int productId, String username) throws WebApiExeption {
+        SendMessage response = new SendMessage();
+        webService.deleteProductFromUserMenu(productId, username);
+        response.setText("Продукт" + productId + " был удалён из вашего меню");
+        response.setReplyMarkup(getDefaultKeyboard());
+        return response;
     }
 
     public static String getProductInfo(Product product) {
