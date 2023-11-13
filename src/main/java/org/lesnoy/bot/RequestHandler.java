@@ -3,10 +3,15 @@ package org.lesnoy.bot;
 import org.apache.shiro.session.Session;
 import org.lesnoy.entry.EntryService;
 import org.lesnoy.exeptions.WebApiExeption;
+import org.lesnoy.product.Product;
+import org.lesnoy.product.ProductOption;
 import org.lesnoy.product.ProductService;
-import org.lesnoy.user.UserDTO;
+import org.lesnoy.user.User;
 import org.lesnoy.user.UserService;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+
+import java.util.List;
+import java.util.ResourceBundle;
 
 import static org.lesnoy.bot.KeyboardProvider.*;
 
@@ -15,118 +20,138 @@ public class RequestHandler {
     private final UserService userService = new UserService();
     private final ProductService productService = new ProductService();
     private final EntryService entryService = new EntryService();
+    private final String messages = "messages";
 
     public SendMessage handleMessage(String username, String request, Session session) {
-        SendMessage response;
-        if (session.getAttribute("command") == null) {
-            response = new SendMessage();
-            switch (request) {
-                case "/start" -> {
-                    session.setAttribute("new_user", new UserDTO(username));
-                    session.setAttribute("command", SessionAttribute.NEW_USER);
-                    response.setText("Я помогу вам расчитать опитмальную диету для вашей цели. Для начала работы нужно заполнить анкету");
-                    response.setReplyMarkup(getReplyKeyboardWithButtons("Продолжить"));
+        SendMessage response = new SendMessage();
+        Object sessionCommand = session.getAttribute("command");
+        if (sessionCommand == null) {
+            MenuButton button;
+            try {
+                button = MenuButton.parseString(request);
+            } catch (Exception e) {
+                response.setText(ResourceBundle.getBundle(messages).getString("unexpected"));
+                response.setReplyMarkup(getDefaultKeyboard());
+                return response;
+            }
+            switch (button) {
+                case START -> {
+                    session.setAttribute("command", MenuButton.START);
+                    session.setAttribute("newUser", new User(username));
+                    response.setText(ResourceBundle.getBundle(messages).getString("greeting"));
+                    response.setReplyMarkup(getReplyKeyboardWithButtons(ResourceBundle.getBundle(messages).getString("continue")));
                 }
-                case "Меню продуктов" -> {
-                    session.setAttribute("command", SessionAttribute.PRODUCT);
-                    response.setText("Меню продуктов:");
+                case PRODUCT_MENU -> {
+                    session.setAttribute("command", MenuButton.PRODUCT_MENU);
+                    response.setText(ResourceBundle.getBundle(messages).getString("productMenu_btn"));
                     response.setReplyMarkup(getInlineKeyboardWithProductMenu());
                 }
-                case "Добавить прием пищи" -> {
-                    session.setAttribute("productOption", "entry");
-                    response.setText("Выберите продукт:");
+                case ADD_DISHES -> {
+                    session.setAttribute("command", MenuButton.ADD_DISHES);
+                    response.setText(ResourceBundle.getBundle(messages).getString("select_pr_or_type"));
                     response.setReplyMarkup(getProductTypeInlineKeyboard());
                 }
-                case "Остаток КБЖУ" -> response.setText(userService.getActualUserCaloriesInfo(username));
-                case "Суточное КБЖУ" -> response.setText(userService.getUserCaloriesInfo(username));
-                default -> {
-                    response.setText("It is what it is");
-                    response.setReplyMarkup(getDefaultKeyboard());
-                }
+                case CALORIES_LEFT -> response.setText(userService.getActualUserCaloriesInfo(username));
+                case CALORIES_DAILY -> response.setText(userService.getUserCaloriesInfo(username));
             }
-            return response;
         } else {
-            return switch (SessionAttribute.valueOf(session.getAttribute("command").toString())) {
-                case NEW_USER -> userService.register(request, session);
-                case PRODUCT -> {
-                    if (session.getAttribute("productOption") != null) {
+            switch (MenuButton.valueOf(String.valueOf(sessionCommand))) {
+                case START -> userService.register(request, session);
+                case PRODUCT_MENU -> {
+                    if (session.getAttribute("productMenu_btn").toString().equals(ProductOption.ADD_PRODUCT.name())) {
                         try {
-                            yield productService.saveProduct(username, request, session);
+                            productService.getResponseByAttribute(username, request, session);
                         } catch (WebApiExeption e) {
-                            response = new SendMessage();
-                            response.setText(e.getMessage());
-                            yield response;
+                            session.removeAttribute("productMenu_btn");
+                            response.setText(ResourceBundle.getBundle(messages).getString("not_found_products"));
+                            response.setReplyMarkup(getDefaultKeyboard());
+                        }
+                    }
+                }
+                case ADD_DISHES -> {
+                    if (session.getAttribute("product") != null) {
+                        try {
+                            response = entryService.saveEntryToUser(
+                                    Integer.parseInt(String.valueOf(session.getAttribute("product"))),
+                                    Integer.parseInt(request),
+                                    username);
+                        } catch (WebApiExeption e) {
+                            response.setText(ResourceBundle.getBundle(messages).getString("write_error"));
+                            response.setReplyMarkup(getDefaultKeyboard());
+                        } finally {
+                            session.removeAttribute("product");
+                            session.removeAttribute("command");
                         }
                     } else {
-                        response = new SendMessage();
-                        response.setText("Ты что жмав? А ну повтори");
-                        yield response;
+                        try {
+                            List<Product> products = productService.findAdminProductByName(request);
+                            response.setText(ResourceBundle.getBundle(messages).getString("found_products"));
+                            response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
+                            session.setAttribute("product", new Object());
+                        } catch (WebApiExeption e) {
+                            session.removeAttribute("command");
+                            response.setText(ResourceBundle.getBundle(messages).getString("not_found_products"));
+                            response.setReplyMarkup(getDefaultKeyboard());
+                        }
                     }
                 }
-                case ADD_ENTRY -> {
-                    session.removeAttribute("entry");
-                    session.removeAttribute("command");
-                    try {
-                        yield response = entryService.saveEntryToUser(Integer.parseInt((String) session.getAttribute("dish")),
-                                Integer.parseInt(request),
-                                username);
-                    } catch (WebApiExeption e) {
-                        response = new SendMessage();
-                        response.setText(e.getMessage());
-                        response.setReplyMarkup(getDefaultKeyboard());
-                        yield response;
-                    }
-                }
-            };
+            }
         }
+        return response;
     }
 
     public SendMessage handleCallback(String username, String request, Session session) {
-        SendMessage response;
-        Object optionAttribute = session.getAttribute("productOption");
-        if (optionAttribute != null) {
-            try {
-                response = productService.getResponseByAttribute(username, request, session, optionAttribute.toString());
-            } catch (WebApiExeption e) {
-                response = new SendMessage();
-                response.setText(e.getMessage());
-                response.setReplyMarkup(getInlineKeyboardWithProductMenu());
+        SendMessage response = new SendMessage();
+        Object sessionCommand = session.getAttribute("command");
+        switch (MenuButton.valueOf(String.valueOf(sessionCommand))) {
+            case ADD_DISHES -> {
+                if (session.getAttribute("product") != null) {
+                    session.setAttribute("product", request);
+                    response.setText(ResourceBundle.getBundle(messages).getString("print_weight"));
+                    response.setReplyMarkup(null);
+                } else {
+                    session.setAttribute("product", request);
+                    try {
+                        List<Product> products = productService.findProductsByOwnerAndType(username, Integer.parseInt(request));
+                        response.setText(ResourceBundle.getBundle(messages).getString("select_product"));
+                        response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
+                    } catch (WebApiExeption e) {
+                        response.setText(ResourceBundle.getBundle(messages).getString("product_read_error"));
+                        response.setReplyMarkup(getDefaultKeyboard());
+                        session.removeAttribute("product");
+                        session.removeAttribute("command");
+                    }
+                }
             }
-        } else if (request.equals("exit")) {
-            session.removeAttribute("command");
-            response = new SendMessage();
-            response.setText("Главное меню");
-            response.setReplyMarkup(getDefaultKeyboard());
-        } else if (request.equals("menu")) {
-            response = new SendMessage();
-            response.setText("Меню продуктов");
-            response.setReplyMarkup(getInlineKeyboardWithProductMenu());
-        } else if (session.getAttribute("entry") == null) {
-            response = new SendMessage();
-            response.setText("Введите вес блюда: ");
-            response.setReplyMarkup(null);
-            session.setAttribute("dish", request);
-            session.setAttribute("command", SessionAttribute.ADD_ENTRY);
-        } else if (session.getAttribute("addToMenu") != null) {
-            try {
-                session.removeAttribute("addToMenu");
-                response = productService.addProductToUserMenu(Integer.parseInt(request), username);
-            } catch (WebApiExeption e) {
-                response = new SendMessage();
-                response.setText(e.getMessage());
-                response.setReplyMarkup(getInlineKeyboardWithProductMenu());
+            case PRODUCT_MENU -> {
+                if (session.getAttribute("productMenu_btn") == null) {
+                    if (request.equals(ProductOption.EXIT.name())) {
+                        session.removeAttribute("command");
+                        response.setReplyMarkup(getDefaultKeyboard());
+                        response.setText(ResourceBundle.getBundle(messages).getString("main_menu"));
+                    } else {
+                        response = productService.getResponse(request, session);
+                    }
+                } else {
+                    if (Integer.parseInt(request) == -1) {
+                        session.removeAttribute("command");
+                        session.removeAttribute("product_id");
+                        session.removeAttribute("productMenu_btn");
+                        response.setReplyMarkup(getDefaultKeyboard());
+                        response.setText(ResourceBundle.getBundle(messages).getString("main_menu"));
+                    } else {
+                        try {
+                            response = productService.getResponseByAttribute(username, request, session);
+                        } catch (WebApiExeption e) {
+                            response.setText(e.getMessage());
+                            response.setReplyMarkup(getDefaultKeyboard());
+                            session.removeAttribute("command");
+                            session.removeAttribute("product_id");
+                            session.removeAttribute("productMenu_btn");
+                        }
+                    }
+                }
             }
-        } else if (session.getAttribute("removeFromMenu") != null) {
-            try {
-                session.removeAttribute("removeFromMenu");
-                response = productService.removeProductFromUserMenu(Integer.parseInt(request), username);
-            } catch (WebApiExeption e) {
-                response = new SendMessage();
-                response.setText(e.getMessage());
-                response.setReplyMarkup(getInlineKeyboardWithProductMenu());
-            }
-        } else {
-            response = productService.getResponse(request, session);
         }
         return response;
     }
