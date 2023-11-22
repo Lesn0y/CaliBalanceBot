@@ -37,7 +37,7 @@ public class RequestHandler {
             switch (button) {
                 case START -> {
                     session.setAttribute("command", MenuButton.START);
-                    session.setAttribute("newUser", new User(username));
+                    session.setAttribute("new_user", new User(username));
                     response.setText(ResourceBundle.getBundle(messages).getString("greeting"));
                     response.setReplyMarkup(getReplyKeyboardWithButtons(ResourceBundle.getBundle(messages).getString("continue")));
                 }
@@ -56,11 +56,11 @@ public class RequestHandler {
             }
         } else {
             switch (MenuButton.valueOf(String.valueOf(sessionCommand))) {
-                case START -> userService.register(request, session);
+                case START -> response = userService.register(request, session);
                 case PRODUCT_MENU -> {
                     if (session.getAttribute("productMenu_btn").toString().equals(ProductOption.ADD_PRODUCT.name())) {
                         try {
-                            productService.getResponseByAttribute(username, request, session);
+                            response = productService.getResponseByAttribute(username, request, session);
                         } catch (WebApiExeption e) {
                             session.removeAttribute("productMenu_btn");
                             response.setText(ResourceBundle.getBundle(messages).getString("not_found_products"));
