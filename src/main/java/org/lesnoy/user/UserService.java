@@ -6,10 +6,14 @@ import org.lesnoy.exeptions.WebApiExeption;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
+import java.util.ResourceBundle;
+
 import static org.lesnoy.bot.KeyboardProvider.getDefaultKeyboard;
 import static org.lesnoy.bot.KeyboardProvider.getReplyKeyboardWithButtons;
 
 public class UserService {
+
+    private final String btn = "buttons";
     private final UserWebService webService = new UserWebService();
 
     public String getActualUserCaloriesInfo(String userName) {
@@ -43,13 +47,16 @@ public class UserService {
 
         if (user.getSex() == null) {
             if (session.getAttribute("sex") != null &&
-                    (request.equals("Мужской") || request.equals("Женский"))) {
-                user.setSex(request.equals("Мужской") ? "MAN" : "WOMAN");
+                    (request.equals(ResourceBundle.getBundle(btn).getString("sex_man")) ||
+                            request.equals(ResourceBundle.getBundle(btn).getString("sex_woman")))) {
+                user.setSex(request.equals(ResourceBundle.getBundle(btn).getString("sex_man")) ? "MAN" : "WOMAN");
                 session.setAttribute("new_user", user);
                 session.removeAttribute("sex");
             } else {
-                String message = "Выберите ваш пол:";
-                ReplyKeyboardMarkup keyboard = getReplyKeyboardWithButtons("Мужской", "Женский");
+                String message = ResourceBundle.getBundle(btn).getString("sex_input");
+                ReplyKeyboardMarkup keyboard = getReplyKeyboardWithButtons(
+                        ResourceBundle.getBundle(btn).getString("sex_man"),
+                        ResourceBundle.getBundle(btn).getString("sex_woman"));
 
                 session.setAttribute("sex", new Object());
                 response.setText(message);
@@ -63,7 +70,7 @@ public class UserService {
                 session.setAttribute("new_user", user);
                 session.removeAttribute("age");
             } else {
-                String message = "Сколько вам полных лет?";
+                String message = ResourceBundle.getBundle(btn).getString("age_input");
                 session.setAttribute("age", new Object());
                 response.setText(message);
                 return response;
@@ -75,7 +82,7 @@ public class UserService {
                 session.setAttribute("new_user", user);
                 session.removeAttribute("weight");
             } else {
-                String message = "Ваш вес: \n(В формате - 75.3)";
+                String message = ResourceBundle.getBundle(btn).getString("weight_input");
                 session.setAttribute("weight", new Object());
                 response.setText(message);
                 return response;
@@ -87,7 +94,7 @@ public class UserService {
                 session.setAttribute("new_user", user);
                 session.removeAttribute("height");
             } else {
-                String message = "Ваш рост: \n(В формате - 170.5)";
+                String message = ResourceBundle.getBundle(btn).getString("height_input");
                 session.setAttribute("height", new Object());
                 response.setText(message);
                 return response;
@@ -95,14 +102,19 @@ public class UserService {
         }
         if (user.getGoal() == null) {
             if (session.getAttribute("goal") != null &&
-                    (request.equals("Накачаться") || request.equals("Похудеть") || request.equals("Поддерживать форму"))) {
-                user.setGoal(request.equals("Накачаться") ? "PUMP_UP" : request.equals("Похудеть") ? "SLIM" : "KEEP_FIT");
+                    (request.equals(ResourceBundle.getBundle(btn).getString("goal_1")) ||
+                     request.equals(ResourceBundle.getBundle(btn).getString("goal_2")) ||
+                     request.equals(ResourceBundle.getBundle(btn).getString("goal_3")))) {
+                user.setGoal(request.equals(ResourceBundle.getBundle(btn).getString("goal_1")) ? "PUMP_UP" :
+                        request.equals(ResourceBundle.getBundle(btn).getString("goal_2")) ? "SLIM" : "KEEP_FIT");
                 session.setAttribute("new_user", user);
                 session.removeAttribute("goal");
             } else {
-                String message = "Выберите вашу цель:";
+                String message = ResourceBundle.getBundle(btn).getString("goal_input");
                 ReplyKeyboardMarkup keyboard = getReplyKeyboardWithButtons(
-                        "Накачаться", "Похудеть", "Поддерживать форму");
+                        ResourceBundle.getBundle(btn).getString("goal_1"),
+                        ResourceBundle.getBundle(btn).getString("goal_2"),
+                        ResourceBundle.getBundle(btn).getString("goal_3"));
 
                 session.setAttribute("goal", new Object());
                 response.setText(message);
@@ -112,15 +124,22 @@ public class UserService {
         }
         if (user.getActivity() == null) {
             if (session.getAttribute("activity") != null &&
-                    (request.equals("Минимальная") || request.equals("Средняя")
-                            || request.equals("Ежедневные тренировки") || request.equals("Профессиональный спортсмен"))) {
-                user.setActivity(request.equals("Минимальная") ? "MINIMUM" : request.equals("Средняя") ? "MIDDLE" : request.equals("Ежедневные тренировки") ? "EVERYDAY" : "MAXIMUM");
+                    (request.equals(ResourceBundle.getBundle(btn).getString("activity_1")) ||
+                     request.equals(ResourceBundle.getBundle(btn).getString("activity_2")) ||
+                     request.equals(ResourceBundle.getBundle(btn).getString("activity_3")) ||
+                     request.equals(ResourceBundle.getBundle(btn).getString("activity_4")))) {
+                user.setActivity(request.equals(ResourceBundle.getBundle(btn).getString("activity_1")) ? "MINIMUM" :
+                        request.equals(ResourceBundle.getBundle(btn).getString("activity_2")) ? "MIDDLE" :
+                        request.equals(ResourceBundle.getBundle(btn).getString("activity_3")) ? "EVERYDAY" : "MAXIMUM");
                 session.setAttribute("new_user", user);
                 session.removeAttribute("activity");
             } else {
-                String message = "Выберите вашу недельную активность:";
+                String message = ResourceBundle.getBundle(btn).getString("activity_input");
                 ReplyKeyboardMarkup keyboard = getReplyKeyboardWithButtons(
-                        "Минимальная", "Средняя", "Ежедневные тренировки", "Профессиональный спортсмен");
+                        ResourceBundle.getBundle(btn).getString("activity_1"),
+                        ResourceBundle.getBundle(btn).getString("activity_2"),
+                        ResourceBundle.getBundle(btn).getString("activity_3"),
+                        ResourceBundle.getBundle(btn).getString("activity_4"));
 
                 session.setAttribute("activity", new Object());
                 response.setText(message);

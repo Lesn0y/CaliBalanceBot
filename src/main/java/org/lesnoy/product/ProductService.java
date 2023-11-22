@@ -83,63 +83,60 @@ public class ProductService {
 
     public SendMessage saveProduct(String username, String request, Session session) throws WebApiExeption {
         SendMessage response = new SendMessage();
-
         if (session.getAttribute("new_product") == null) {
             session.setAttribute("new_product", new Product(request));
-
-            List<Product> products = webService.findAdminProductByName(request);
-            response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
-            response.setText("Еда с подобным названием");
-        } else {
-            Product product = (Product) session.getAttribute("new_product");
-
-            if (product.getProductType() == null) {
-                if (session.getAttribute("type") != null) {
-                    try {
-                        product.setProductTypeByTypeName(request);
-                    } catch (Exception e) {
-                        response.setText("Данные введены некорректно, повторите попытку ввода");
-                        return response;
-                    }
-                    session.setAttribute("new_product", product);
-                    session.removeAttribute("type");
-                } else {
-                    response.setText("Выберите к какому типу этот продукт относится:");
-                    response.setReplyMarkup(
-                            getReplyKeyboardWithButtons(ProductType.getAllNames())
-                    );
-                    session.setAttribute("type", new Object());
-                    return response;
-                }
-            }
-            if (product.getCal() == 0) {
-                if (session.getAttribute("cal") != null) {
-                    String[] stats = request.split("/");
-                    if (stats.length != 5) {
-                        response.setText("Данные введены некорректно, повторите попытку ввода");
-                        return response;
-                    }
-                    product.setGrams(Integer.parseInt(stats[0]));
-                    product.setCal(Float.parseFloat(stats[1]));
-                    product.setProt(Float.parseFloat(stats[2]));
-                    product.setFats(Float.parseFloat(stats[3]));
-                    product.setCarbs(Float.parseFloat(stats[4]));
-                    session.removeAttribute("cal");
-                } else {
-                    String message = "Укажите данные в формате ВЕС/КАЛОРИИ/БЕЛКИ/ЖИРЫ/УГЛЕВОДЫ";
-                    response.setText(message);
-                    session.setAttribute("cal", new Object());
-                    return response;
-                }
-            }
-
-            session.removeAttribute("command");
-            session.removeAttribute("productOption");
-            session.removeAttribute("new_product");
-            Product newProduct = webService.saveProduct(product, username);
-            response.setText("Продукт " + getProductInfo(newProduct) + " - успешно сохранён");
-            response.setReplyMarkup(getDefaultKeyboard());
         }
+
+        Product product = (Product) session.getAttribute("new_product");
+
+        if (product.getProductType() == null) {
+            if (session.getAttribute("type") != null) {
+                try {
+                    product.setProductTypeByTypeName(request);
+                } catch (Exception e) {
+                    response.setText("Данные введены некорректно, повторите попытку ввода");
+                    return response;
+                }
+                session.setAttribute("new_product", product);
+                session.removeAttribute("type");
+            } else {
+                response.setText("Выберите к какому типу этот продукт относится:");
+                response.setReplyMarkup(
+                        getReplyKeyboardWithButtons(ProductType.getAllNames())
+                );
+                session.setAttribute("type", new Object());
+                return response;
+            }
+        }
+        if (product.getCal() == 0) {
+            if (session.getAttribute("cal") != null) {
+                String[] stats = request.split("/");
+                if (stats.length != 5) {
+                    response.setText("Данные введены некорректно, повторите попытку ввода");
+                    return response;
+                }
+                product.setGrams(Integer.parseInt(stats[0]));
+                product.setCal(Float.parseFloat(stats[1]));
+                product.setProt(Float.parseFloat(stats[2]));
+                product.setFats(Float.parseFloat(stats[3]));
+                product.setCarbs(Float.parseFloat(stats[4]));
+                session.removeAttribute("cal");
+            } else {
+                String message = "Укажите данные в формате ВЕС/КАЛОРИИ/БЕЛКИ/ЖИРЫ/УГЛЕВОДЫ";
+                response.setText(message);
+                session.setAttribute("cal", new Object());
+                return response;
+            }
+        }
+
+        session.removeAttribute("command");
+        session.removeAttribute("productOption");
+        session.removeAttribute("new_product");
+        session.removeAttribute("productMenu_btn");
+        Product newProduct = webService.saveProduct(product, username);
+        response.setText("Продукт " + getProductInfo(newProduct) + " - успешно сохранён");
+        response.setReplyMarkup(getDefaultKeyboard());
+
         return response;
     }
 

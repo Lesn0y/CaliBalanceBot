@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class EntryWebService {
 
-    private final String serverUrl = "http://89.108.76.111:8080";
+    private final String serverUrl = "http://localhost:8080";
 
     public Entry saveEntryToUser(EntryDTO entryDTO) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
