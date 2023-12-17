@@ -52,26 +52,21 @@ public class KeyboardProvider {
         List<InlineKeyboardButton> row1 = new ArrayList<>();
         List<InlineKeyboardButton> row2 = new ArrayList<>();
         List<InlineKeyboardButton> row3 = new ArrayList<>();
-        List<InlineKeyboardButton> row4 = new ArrayList<>();
 
         InlineKeyboardButton button1 = new InlineKeyboardButton(ResourceBundle.getBundle(buttons).getString("product_menu_1"));
         button1.setCallbackData(ProductOption.ADD_PRODUCT.name());
         InlineKeyboardButton button2 = new InlineKeyboardButton(ResourceBundle.getBundle(buttons).getString("product_menu_2"));
         button2.setCallbackData(ProductOption.OWN_PRODUCTS.name());
-        InlineKeyboardButton button3 = new InlineKeyboardButton(ResourceBundle.getBundle(buttons).getString("product_menu_3"));
-        button3.setCallbackData(ProductOption.ALL_PRODUCTS.name());
-        InlineKeyboardButton button4 = new InlineKeyboardButton(ResourceBundle.getBundle(buttons).getString("menu_back"));
-        button4.setCallbackData(ProductOption.EXIT.name());
+        InlineKeyboardButton button3 = new InlineKeyboardButton(ResourceBundle.getBundle(buttons).getString("menu_back"));
+        button3.setCallbackData(ProductOption.EXIT.name());
 
         row1.add(button1);
         row2.add(button2);
         row3.add(button3);
-        row4.add(button4);
 
         rows.add(row1);
         rows.add(row2);
         rows.add(row3);
-        rows.add(row4);
 
         keyboard.setKeyboard(rows);
         return keyboard;

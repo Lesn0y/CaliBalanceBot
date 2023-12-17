@@ -51,8 +51,18 @@ public class RequestHandler {
                     response.setText(ResourceBundle.getBundle(messages).getString("select_pr_or_type"));
                     response.setReplyMarkup(getProductTypeInlineKeyboard());
                 }
-                case CALORIES_LEFT -> response.setText(userService.getActualUserCaloriesInfo(username));
-                case CALORIES_DAILY -> response.setText(userService.getUserCaloriesInfo(username));
+                case CALORIES_DAILY -> {
+                    try {
+                        response.setText(entryService.getUserDailyInfo(username));
+                    } catch (WebApiExeption e) {
+                        response.setText("RequestHandler - handleMessage() - CALORIES_DAILY - ERROR");
+                    }
+                }
+                case UPDATE_CALORIES_INFO -> {
+                    session.setAttribute("command", MenuButton.UPDATE_CALORIES_INFO);
+                    response.setText(ResourceBundle.getBundle(messages).getString("write_calories_info"));
+                    response.setReplyMarkup(null);
+                }
             }
         } else {
             switch (MenuButton.valueOf(String.valueOf(sessionCommand))) {
@@ -69,31 +79,23 @@ public class RequestHandler {
                     }
                 }
                 case ADD_DISHES -> {
-                    if (session.getAttribute("product") != null) {
-                        try {
-                            response = entryService.saveEntryToUser(
-                                    Integer.parseInt(String.valueOf(session.getAttribute("product"))),
-                                    Integer.parseInt(request),
-                                    username);
-                        } catch (WebApiExeption e) {
-                            response.setText(ResourceBundle.getBundle(messages).getString("write_error"));
-                            response.setReplyMarkup(getDefaultKeyboard());
-                        } finally {
-                            session.removeAttribute("product");
-                            session.removeAttribute("command");
-                        }
-                    } else {
-                        try {
-                            List<Product> products = productService.findAdminProductByName(request);
-                            response.setText(ResourceBundle.getBundle(messages).getString("found_products"));
-                            response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
-                            session.setAttribute("product", new Object());
-                        } catch (WebApiExeption e) {
-                            session.removeAttribute("command");
-                            response.setText(ResourceBundle.getBundle(messages).getString("not_found_products"));
-                            response.setReplyMarkup(getDefaultKeyboard());
-                        }
+                    try {
+                        response = entryService.saveEntryToUser(
+                                Integer.parseInt(String.valueOf(session.getAttribute("product"))),
+                                Integer.parseInt(request),
+                                username);
+                    } catch (WebApiExeption e) {
+                        response.setText(ResourceBundle.getBundle(messages).getString("write_error"));
+                        response.setReplyMarkup(getDefaultKeyboard());
+                    } finally {
+                        session.removeAttribute("product");
+                        session.removeAttribute("command");
                     }
+
+                }
+                case UPDATE_CALORIES_INFO -> {
+                    response = userService.updateUserInfo(username, request);
+                    session.removeAttribute("command");
                 }
             }
         }
@@ -112,7 +114,7 @@ public class RequestHandler {
                 } else {
                     session.setAttribute("product", request);
                     try {
-                        List<Product> products = productService.findProductsByOwnerAndType(username, Integer.parseInt(request));
+                        List<Product> products = productService.findProductsByUsernameAndType(username, Integer.parseInt(request));
                         response.setText(ResourceBundle.getBundle(messages).getString("select_product"));
                         response.setReplyMarkup(getInlineKeyboardWithProductsInfo(products));
                     } catch (WebApiExeption e) {

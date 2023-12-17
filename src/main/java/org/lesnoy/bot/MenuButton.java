@@ -6,8 +6,8 @@ public enum MenuButton {
     START("/start"),
     PRODUCT_MENU("Меню продуктов"),
     ADD_DISHES("Добавить прием пищи"),
-    CALORIES_LEFT("Остаток КБЖУ"),
-    CALORIES_DAILY("Суточное КБЖУ");
+    CALORIES_DAILY("Суточное КБЖУ"),
+    UPDATE_CALORIES_INFO("Изменить норму КБЖУ");
 
     private final String massage;
 
