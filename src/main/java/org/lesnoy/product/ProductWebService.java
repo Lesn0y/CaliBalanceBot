@@ -12,9 +12,57 @@ import java.util.List;
 
 public class ProductWebService {
 
-    private final String serverUrl = "http://localhost:8080";
+    private final String serverUrl = "http://localhost:8080/api/v2";
 
-    public Product saveProduct(Product product, String username) throws WebApiExeption {
+    public List<Product> getUserProductsByType(String username, int typeId) throws WebApiExeption {
+        OkHttpClient httpClient = new OkHttpClient();
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        Request request = new Request.Builder()
+                .url(serverUrl + "/users/" + username + "/products?type-id=" + typeId)
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.code() == 200) {
+                String jsonResponse = response.body().string();
+                JsonNode jsonArray = mapper.readTree(jsonResponse);
+
+                List<Product> products = new ArrayList<>();
+                for (JsonNode element : jsonArray) {
+                    products.add(mapper.treeToValue(element, Product.class));
+                }
+                return products;
+            }
+            throw new WebApiExeption("Продукты пользователя @" + username + " не найдены");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public Product getProductByUsernameAndId(String username, int productId) throws WebApiExeption {
+        OkHttpClient httpClient = new OkHttpClient();
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        Request request = new Request.Builder()
+                .url(serverUrl + "/users/" + username + "/" + productId)
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.code() == 200) {
+                String jsonResponse = response.body().string();
+                return mapper.readValue(jsonResponse, Product.class);
+            }
+            throw new WebApiExeption("Продукт не найдены");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public Product saveProductToUser(Product product, String username) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -28,7 +76,7 @@ public class ProductWebService {
         RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
 
         Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/products/" + username)
+                .url(serverUrl + "/users/" + username + "/products")
                 .post(body)
                 .build();
 
@@ -48,7 +96,7 @@ public class ProductWebService {
         OkHttpClient httpClient = new OkHttpClient();
 
         Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/products/" + username + "/" + productId)
+                .url(serverUrl + "/users/" + username + "/products/" + productId)
                 .delete()
                 .build();
 
@@ -58,108 +106,6 @@ public class ProductWebService {
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
-        }
-    }
-
-    public List<Product> findAdminProductByName(String productName) throws WebApiExeption {
-        OkHttpClient httpClient = new OkHttpClient();
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/products?name=" + productName)
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.code() == 200) {
-                String jsonResponse = response.body().string();
-                JsonNode jsonArray = mapper.readTree(jsonResponse);
-
-                List<Product> products = new ArrayList<>();
-                for (JsonNode element : jsonArray) {
-                    products.add(mapper.treeToValue(element, Product.class));
-                }
-                return products;
-            }
-            throw new WebApiExeption("Продукт " + productName + " не найден");
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
-    }
-
-    public List<Product> findOwnerProductsByType(String login, int typeId) throws WebApiExeption {
-        OkHttpClient httpClient = new OkHttpClient();
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/products?owner=" + login + "&type_id=" + typeId)
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.code() == 200) {
-                String jsonResponse = response.body().string();
-                JsonNode jsonArray = mapper.readTree(jsonResponse);
-
-                List<Product> products = new ArrayList<>();
-                for (JsonNode element : jsonArray) {
-                    products.add(mapper.treeToValue(element, Product.class));
-                }
-                return products;
-            }
-            throw new WebApiExeption("Продукты пользователя @" + login + " не найдены");
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
-    }
-
-    public List<Product> findAdminProductsByType(int typeId) throws WebApiExeption {
-        OkHttpClient httpClient = new OkHttpClient();
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/products?type_id=" + typeId)
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.code() == 200) {
-                String jsonResponse = response.body().string();
-                JsonNode jsonArray = mapper.readTree(jsonResponse);
-
-                List<Product> products = new ArrayList<>();
-                for (JsonNode element : jsonArray) {
-                    products.add(mapper.treeToValue(element, Product.class));
-                }
-                return products;
-            }
-            throw new WebApiExeption("Продукты не найдены");
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
-    }
-
-    public Product findProductById(int productId) throws WebApiExeption {
-        OkHttpClient httpClient = new OkHttpClient();
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/products/" + productId)
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.code() == 200) {
-                String jsonResponse = response.body().string();
-                return mapper.readValue(jsonResponse, Product.class);
-            }
-            throw new WebApiExeption("Продукт не найдены");
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return null;
         }
     }
 }
