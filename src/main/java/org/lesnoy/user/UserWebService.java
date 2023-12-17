@@ -3,20 +3,41 @@ package org.lesnoy.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
-import org.lesnoy.entry.Entry;
 import org.lesnoy.exeptions.WebApiExeption;
 
 import java.io.IOException;
 
 public class UserWebService {
 
-    private final String serverUrl = "http://localhost:8080";
+    private final String serverUrl = "http://localhost:8080/api/v2";
+
+    public User getUserByUsername(String username) throws WebApiExeption {
+        OkHttpClient httpClient = new OkHttpClient();
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        Request request = new Request.Builder()
+                .url(serverUrl + "/users/" + username)
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (response.code() == 200) {
+                String jsonResponse = response.body().string();
+                return mapper.readValue(jsonResponse, User.class);
+            }
+
+            throw new WebApiExeption("Пользователь с никнеймом @" + username + " ещё не зарегистрирован");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
 
     public User registerUser(User user) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
-        String json = null;
+        String json;
         try {
             json = mapper.writeValueAsString(user);
         } catch (JsonProcessingException e) {
@@ -26,7 +47,7 @@ public class UserWebService {
         RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
 
         Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/users")
+                .url(serverUrl + "/users")
                 .post(body)
                 .build();
 
@@ -42,13 +63,22 @@ public class UserWebService {
         }
     }
 
-    public User getUserStats(String username) throws WebApiExeption {
+    public User updateUserInfo(String username, UserCallInfoDTO userCallInfoDTO) throws WebApiExeption {
         OkHttpClient httpClient = new OkHttpClient();
 
         ObjectMapper mapper = new ObjectMapper();
+        String json;
+        try {
+            json = mapper.writeValueAsString(userCallInfoDTO);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
 
         Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/users/" + username)
+                .url(serverUrl + "/users/" + username)
+                .put(body)
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
@@ -56,36 +86,10 @@ public class UserWebService {
                 String jsonResponse = response.body().string();
                 return mapper.readValue(jsonResponse, User.class);
             }
-
             throw new WebApiExeption("Пользователь с никнеймом @" + username + " ещё не зарегистрирован");
         } catch (IOException e) {
             System.out.println(e.getMessage());
             return null;
         }
     }
-
-    public Entry getDailyUserStats(String username) throws WebApiExeption {
-        OkHttpClient httpClient = new OkHttpClient();
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        Request request = new Request.Builder()
-                .url(serverUrl + "/api/v1/entries?username=" + username)
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.code() == 200) {
-                String jsonResponse = response.body().string();
-                return mapper.readValue(jsonResponse, Entry.class);
-            } else if (response.code() == 204) {
-                return null;
-            }
-
-            throw new WebApiExeption("Пользователь с никнеймом @" + username + " ещё не зарегистрирован");
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
-    }
-
 }
