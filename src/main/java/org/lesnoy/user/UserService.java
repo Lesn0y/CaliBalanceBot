@@ -1,7 +1,8 @@
 package org.lesnoy.user;
 
 import org.apache.shiro.session.Session;
-import org.lesnoy.entry.Entry;
+import org.lesnoy.bot.MessageProvider;
+import org.lesnoy.entry.EntryService;
 import org.lesnoy.exeptions.WebApiExeption;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -14,30 +15,30 @@ import static org.lesnoy.bot.KeyboardProvider.getReplyKeyboardWithButtons;
 public class UserService {
 
     private final String btn = "buttons";
-    private final UserWebService webService = new UserWebService();
+    private final UserWebService userWebService = new UserWebService();
 
-    public String getActualUserCaloriesInfo(String userName) {
-        try {
-            Entry dailyUserStats = webService.getDailyUserStats(userName);
-            if (dailyUserStats == null) {
-                return "Похоже, сегодня вы еще не ели";
-            }
-            return dailyUserStats.getCaloriesInfo();
-        } catch (WebApiExeption e) {
-            return e.getMessage();
+    public SendMessage updateUserInfo(String username, String request) {
+        SendMessage response = new SendMessage();
+        String[] stats = request.split("/");
+        if (stats.length != 4) {
+            response.setText("Данные введены некорректно, повторите попытку ввода");
+            return response;
         }
-    }
 
-    public String getUserCaloriesInfo(String username) {
+        UserCallInfoDTO userCallInfo = new UserCallInfoDTO();
+        userCallInfo.setCal(Float.parseFloat(stats[0]));
+        userCallInfo.setProt(Float.parseFloat(stats[1]));
+        userCallInfo.setFats(Float.parseFloat(stats[2]));
+        userCallInfo.setCarbs(Float.parseFloat(stats[3]));
         try {
-            return webService.getUserStats(username).getCaloriesInfo();
+            User user = userWebService.updateUserInfo(username, userCallInfo);
+            response.setText(MessageProvider.convertUserInfoToMessage(new UserEntryDTO(user, null)));
+            response.setReplyMarkup(null);
+            return response;
         } catch (WebApiExeption e) {
-            return e.getMessage();
+            response.setText(e.getMessage());
+            return response;
         }
-    }
-
-    public User saveUser(User user) throws WebApiExeption {
-        return webService.registerUser(user);
     }
 
     public SendMessage register(String request, Session session) {
@@ -161,5 +162,9 @@ public class UserService {
             session.removeAttribute("command");
             session.removeAttribute("new_user");
         }
+    }
+
+    private User saveUser(User user) throws WebApiExeption {
+        return userWebService.registerUser(user);
     }
 }
