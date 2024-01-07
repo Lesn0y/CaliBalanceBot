@@ -108,9 +108,16 @@ public class RequestHandler {
         switch (MenuButton.valueOf(String.valueOf(sessionCommand))) {
             case ADD_DISHES -> {
                 if (session.getAttribute("product") != null) {
-                    session.setAttribute("product", request);
-                    response.setText(ResourceBundle.getBundle(messages).getString("print_weight"));
-                    response.setReplyMarkup(null);
+                    if (request.equals(String.valueOf(-1))) {
+                        response.setText(ResourceBundle.getBundle(messages).getString("main_menu"));
+                        response.setReplyMarkup(getDefaultKeyboard());
+                        session.removeAttribute("product");
+                        session.removeAttribute("command");
+                    } else {
+                        session.setAttribute("product", request);
+                        response.setText(ResourceBundle.getBundle(messages).getString("print_weight"));
+                        response.setReplyMarkup(null);
+                    }
                 } else {
                     session.setAttribute("product", request);
                     try {
